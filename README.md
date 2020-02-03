@@ -42,7 +42,7 @@ In this proposal we aim to fix these drawbacks and set the following requirement
 
 ### Non-Goals
 - Precise memory measurement. Implementations are allowed to return an estimate because computing the precise result may be computationally expensive.
-- Complete memory measurement. Implementations are free to account as many memory type (JS, DOM, CSS) as possible, but they are not required to account all memory types. Memory type that cannot be isolated per page can be omitted.
+- Complete memory measurement. Implementations are free to account as many memory types (JS, DOM, CSS) as possible, but they are not required to account all memory types. Memory types that cannot be isolated per page can be omitted.
 - Comparing memory usage across browsers. The API results are browser implementation specific.
 - Synchronous memory measurement before and after a specific action. The API has asynchronous interface to allow folding the measurement into garbage collection and perform necessary interprocess communication. It may take seconds or minutes until the result is available.
 
