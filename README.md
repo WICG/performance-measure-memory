@@ -11,15 +11,13 @@ const result = await performance.measureMemory();
 console.log(result);
 // Console output:
 {
-  memoryUsage: {
-    bytes: 100*MB,
-    breakdown: [
-      {bytes: 40*MB, globals: 2, type: 'js/window', origins: ['foo.com']},
-      {bytes: 30*MB, globals: 1, type: 'js/window', origins: ['bar.com']},
-      {bytes: 20*MB, globals: 1, type: 'js/worker', origins: ['foo.com']},
-      {bytes: 10*MB, globals: 3, type: 'dom', origins: ['foo.com', 'bar.com']},
-    ]
-  }
+  bytes: 100*MB,
+  breakdown: [
+    {bytes: 40*MB, globals: 2, type: 'js/window', origins: ['foo.com']},
+    {bytes: 30*MB, globals: 1, type: 'js/window', origins: ['bar.com']},
+    {bytes: 20*MB, globals: 1, type: 'js/worker', origins: ['foo.com']},
+    {bytes: 10*MB, globals: 3, type: 'dom', origins: ['foo.com', 'bar.com']},
+  ]
 }
 ```
 
@@ -77,20 +75,18 @@ const result = await performance.measureMemory();
 console.log(result);
 // Console output:
 {
-  memoryUsage: {
-    bytes: 100*MB,
-    breakdown: [
-      {bytes: 40*MB, globals: 2, type: 'js/window', origins: ['foo.com']},
-      {bytes: 30*MB, globals: 1, type: 'js/window', origins: ['bar.com']},
-      {bytes: 20*MB, globals: 1, type: 'js/worker', origins: ['foo.com']},
-      {bytes: 10*MB, globals: 3, type: 'dom', origins: ['foo.com', 'bar.com']},
-    ]
-  }
+  bytes: 100*MB,
+  breakdown: [
+    {bytes: 40*MB, globals: 2, type: 'js/window', origins: ['foo.com']},
+    {bytes: 30*MB, globals: 1, type: 'js/window', origins: ['bar.com']},
+    {bytes: 20*MB, globals: 1, type: 'js/worker', origins: ['foo.com']},
+    {bytes: 10*MB, globals: 3, type: 'dom', origins: ['foo.com', 'bar.com']},
+  ]
 }
 ```
-The `memoryUsage.bytes` field contains the total estimate of web page's memory usage.
+The `bytes` field contains the total estimate of web page's memory usage.
 
-Each entry of the `memoryUsage.breakdown` array describes some portion of the memory.
+Each entry of the `breakdown` array describes some portion of the memory.
 It lists all `origins` that use the memory portion.
 We expect implementations to differ in the granularity of origin attribution.
 Some implementations will provide accurate per-origin attribution so that the `origins` lists are singletons.
