@@ -106,7 +106,7 @@ Alternative design would be to have separate `types` and `context` fields:
 ### Cross-origin information leak
 Only [cross-origin isolated](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/crossOriginIsolated) web pages that opt in using [the COOP+COEP headers](https://docs.google.com/document/d/1zDlfvfTJ_9e8Jdc8ehuV4zMEu9ySMCiTGMS9y0GU92k/edit) can use the API.
 This prevents cross-origin information leaks because all iframes and resources have to explicitly opt in using CORP/CORS.
-Additionally it is guaranteed that a cross-origin isolated web page is not colocated with web page in the same address space.
+Additionally it is guaranteed that a cross-origin isolated web page is not colocated with other web pages in the same address space.
 
 An attempt to invoke the API when
 `crossOriginIsolated === false` leads to promise rejection with a `SecurityError` DOM exception.
@@ -132,13 +132,14 @@ Some information leak is unavoidable though. The web page can deduce:
 Note that such information can be obtained from the existing APIs (`navigator.userAgent`, `navigator.deviceMemory`).
 
 ## Performance Considerations
-The API with coarse-grained breakdown can be implemented efficiently provided that the browser does not collocate a  cross-origin web page with other web pages.
+The API with coarse-grained breakdown can be implemented efficiently provided that the browser does not colocate a cross-origin web page with other web pages in the same process.
 In such case the API can return the sizes of the heaps (JS, DOM, CSS, worker, etc) and list origins on each heap.
 
 Fine-grained per-origin breakdown requires more expensive computation because objects from different origins may be allocated on the same heap.
-One possible implementation is to infer the object's origin while traversing the object graph during garbage collection.
+One possible implementation is to segregate objects by origin during allocation.
+Alternative implementation is to infer the object's origin while traversing the object graph during garbage collection.
 This was implemented in Chrome/V8 and introduces 10%-20% overhead to garbage collection.
-An alternative implementation is to segregate objects by origin during allocation.
+See [Implementation Notes](IMPLEMENTATION_NOTES.md) for more details.
 
 ## API Usage
 The API is well-suited for A/B testing, regressions detection, and general analysis of aggregate memory usage data from production.
