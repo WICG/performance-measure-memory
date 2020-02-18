@@ -1,6 +1,6 @@
 # performance.measureMemory API
 
-Last updated: 2020-02-05
+Last updated: 2020-02-18
 
 ## tl;dr
 We propose a new `peformance.measureMemory` API that estimates memory usage of a web page including all its iframes and workers. The API is available only for [cross-origin isolated](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/crossOriginIsolated) web pages that opt in using [the COOP+COEP headers](https://docs.google.com/document/d/1zDlfvfTJ_9e8Jdc8ehuV4zMEu9ySMCiTGMS9y0GU92k/edit) preventing cross-origin information leaks.
@@ -108,6 +108,10 @@ Only [cross-origin isolated](https://developer.mozilla.org/en-US/docs/Web/API/Wi
 This prevents cross-origin information leaks because all iframes and resources have to explicitly opt in using CORP/CORS.
 Additionally it is guaranteed that a cross-origin isolated web page is not colocated with other web pages in the same address space.
 
+The `breakdown` field of the result lists origins of iframes embedded in the web page, which is new information that becomes available to the caller of the API.
+Since each iframe opts in using CORP/CORS, we do not consider this issue critical.
+On the other hand, providing per-origin breakdown makes the API results more actionable for webpages that embed many cross-origin iframes.
+
 An attempt to invoke the API when
 `crossOriginIsolated === false` leads to promise rejection with a `SecurityError` DOM exception.
 ```JavaScript
@@ -120,6 +124,7 @@ try {
   console.assert(error.message === 'crossOriginIsolated is required');
 }
 ```
+
 
 ### Fingerprinting
 Implementations need to be careful to avoid leaking information about the underlying browser instance.
