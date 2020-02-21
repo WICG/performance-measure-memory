@@ -41,7 +41,7 @@ In this proposal we aim to fix these drawbacks and set the following requirement
 - The API is defined based on the standard concepts from HTML and ECMAScript specifications and does not assume any particular process model.
 
 ### Non-Goals
-- Precise memory measurement. Implementations are allowed to return an estimate because computing the precise result may be computationally expensive.
+- Precise memory measurement. Implementations are allowed to return an estimate because computing the precise result may be expensive.
 - Complete memory measurement. Implementations are free to account as many memory types (JS, DOM, CSS) as possible, but they are not required to account all memory types. Memory types that cannot be isolated per page can be omitted.
 - Comparing memory usage across browsers. The API results are browser implementation specific.
 - Synchronous memory measurement before and after a specific action. The API has an asynchronous interface to allow folding the measurement into garbage collection and perform necessary interprocess communication. It may take seconds or minutes until the result is available.
@@ -71,7 +71,7 @@ Thus the two proposals are orthogonal.
 
 ## API Proposal
 The API consists of a single asynchronous method `performance.measureMemory` that estimates memory usage of the web page and provides breakdown of the result by type and owner.
-More formally, the API estimate memory usage of all [JS agent clusters](https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism) of the current [browsing context group](https://html.spec.whatwg.org/multipage/browsers.html#browsing-context-group).
+More formally, the API estimates memory usage of all [JS agent clusters](https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism) of the current [browsing context group](https://html.spec.whatwg.org/multipage/browsers.html#browsing-context-group).
 
 ```JavaScript
 const result = await performance.measureMemory();
@@ -109,7 +109,7 @@ Alternative design would be to have separate `types` and `context` fields (or om
 
 Adding a `UASpecific` suffix would emphasize that the API result is implementation dependent:
 ```JavaScript
-  { bytesUASpecific: 40*MB, ...},
+  {bytesUASpecific: 40*MB, ...},
 
 ```
 Our preference however is to communicate the message in documentation and keep the API concise and consistent with other Performance APIs.
