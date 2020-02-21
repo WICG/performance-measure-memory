@@ -89,7 +89,8 @@ The `bytes` field contains the total estimate of web page's memory usage.
 Each entry of the `breakdown` array describes some portion of the memory and attributes it to a set of windows and workers identified by URLs.
 We expect implementations to differ in the granularity of attribution.
 An implementation may return `attribution: []` indicating that the portion of the memory is attributed to the whole web page.
-The example above has fine-grained attribution for JS memory and coarse-grained attribution for DOM memory.
+The example above has fine-grained attribution for the JS memory and coarse-grained attribution for the DOM memory.
+(I.e., the implementation cannot distinguish whether the DOM memory is attributed to `https://foo.com` or `https://bar.com/iframe`.)
 
 In order to prevent URL leaks, cross-origin iframes are considered opaque for the purposes of attribution.
 This means the memory of all iframes and workers nested in a cross-origin iframe is attributed to the cross-origin iframe.
