@@ -1,6 +1,6 @@
 # performance.measureMemory API
 
-Last updated: 2020-02-18
+Last updated: 2020-02-21
 
 ## tl;dr
 We propose a new `peformance.measureMemory` API that estimates memory usage of a web page including all its iframes and workers. The API is available only for [cross-origin isolated](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/crossOriginIsolated) web pages that opt in using [the COOP+COEP headers](https://docs.google.com/document/d/1zDlfvfTJ_9e8Jdc8ehuV4zMEu9ySMCiTGMS9y0GU92k/edit) preventing cross-origin information leaks.
@@ -37,12 +37,14 @@ In this proposal we aim to fix these drawbacks and set the following requirement
 - The API measures memory usage of the web page including all its iframes and workers.
 - The API accounts only the objects allocated by the web page. Other web pages do not affect the result.
 - The API provides breakdown of the result by type and owner with implementation-specific granularity.
+- The API has no overhead when it is not used.
+- The API is defined based on the standard concepts from HTML and ECMAScript specifications and does not assume any particular process model.
 
 ### Non-Goals
 - Precise memory measurement. Implementations are allowed to return an estimate because computing the precise result may be computationally expensive.
 - Complete memory measurement. Implementations are free to account as many memory types (JS, DOM, CSS) as possible, but they are not required to account all memory types. Memory types that cannot be isolated per page can be omitted.
 - Comparing memory usage across browsers. The API results are browser implementation specific.
-- Synchronous memory measurement before and after a specific action. The API has asynchronous interface to allow folding the measurement into garbage collection and perform necessary interprocess communication. It may take seconds or minutes until the result is available.
+- Synchronous memory measurement before and after a specific action. The API has an asynchronous interface to allow folding the measurement into garbage collection and perform necessary interprocess communication. It may take seconds or minutes until the result is available.
 
 ## Related Work
 ### JavaScript agent memory API
@@ -69,6 +71,7 @@ Thus the two proposals are orthogonal.
 
 ## API Proposal
 The API consists of a single asynchronous method `performance.measureMemory` that estimates memory usage of the web page and provides breakdown of the result by type and owner.
+More formally, the API estimate memory usage of all [JS agent clusters](https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism) of the current [browsing context group](https://html.spec.whatwg.org/multipage/browsers.html#browsing-context-group).
 
 ```JavaScript
 const result = await performance.measureMemory();
@@ -84,7 +87,7 @@ console.log(result);
   ]
 }
 ```
-The `bytes` field contains the total estimate of web page's memory usage.
+The `bytes` field contains the total estimate of the web page's memory usage.
 
 Each entry of the `breakdown` array describes some portion of the memory and attributes it to a set of windows and workers identified by URLs.
 We expect implementations to differ in the granularity of attribution.
@@ -98,17 +101,25 @@ Additionally, the reported URL of a cross-origin iframe is the original URL of t
 There are no restrictions for same-origin iframes because the web page can read their URLs at any time.
 
 The `type` field contains implementation specific description of the memory portion.
-Alternative design would be to have separate `types` and `context` fields:
+Alternative design would be to have separate `types` and `context` fields (or omit `context` altogether):
 ```JavaScript
-  {bytes: 40*MB, globals: 2, types: ['js'], context:'window', attribution: ['https://foo.com']},
+  {bytes: 40*MB, types: ['js'], context:'window', attribution: ['https://foo.com']},
 
 ```
+
+Adding a `UASpecific` suffix would emphasize that the API result is implementation dependent:
+```JavaScript
+  { bytesUASpecific: 40*MB, ...},
+
+```
+Our preference however is to communicate the message in documentation and keep the API concise and consistent with other Performance APIs.
+
 
 ## Security Considerations
 ### Cross-origin information leak
 Only [cross-origin isolated](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/crossOriginIsolated) web pages that opt in using [the COOP+COEP headers](https://docs.google.com/document/d/1zDlfvfTJ_9e8Jdc8ehuV4zMEu9ySMCiTGMS9y0GU92k/edit) can use the API.
 This prevents cross-origin information leaks because all iframes and resources have to explicitly opt in using CORP/CORS.
-Additionally it is guaranteed that a cross-origin isolated web page is not colocated with other web pages in the same address space.
+Additionally it is guaranteed that a cross-origin isolated web page is not collocated with other web pages in the same address space.
 
 All URLs reported in the `breakdown` part of the result are known to the web page, so there is no information leak.
 
@@ -137,13 +148,13 @@ Some information leak is unavoidable though. The web page can deduce:
 Note that such information can be obtained from the existing APIs (`navigator.userAgent`, `navigator.deviceMemory`).
 
 ## Performance Considerations
-The API with coarse-grained breakdown can be implemented efficiently provided that the browser does not colocate a cross-origin web page with other web pages in the same process.
-In such case the API can return the sizes of the heaps (JS, DOM, CSS, worker, etc) with empty attributions.
+The API with coarse-grained breakdown can be implemented efficiently provided that the browser does not collocate a cross-origin web page with other web pages in the same process.
+In such a case the API can return the sizes of the heaps (JS, DOM, CSS, worker, etc) with empty attributions.
 
 Fine-grained attribution requires more expensive computation because objects from different frames may be allocated on the same heap.
 One possible implementation is to segregate objects by frame during allocation.
 Alternative implementation is to infer the object's frame while traversing the object graph during garbage collection.
-This was implemented in Chrome/V8 and introduces 10%-20% overhead to garbage collection.
+This was implemented in Chrome/V8 and introduces 10%-20% overhead to garbage collection (only if there is a pending memory measurement request).
 See [Implementation Notes](IMPLEMENTATION_NOTES.md) for more details.
 
 ## API Usage

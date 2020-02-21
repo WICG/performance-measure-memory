@@ -41,3 +41,4 @@ Shared strings and code objects are likely to be affected, so it might be worthw
 3.a. if `object` can be shared between multiple realms, then change `realm` to `unknown`.
 
 The algorithm [was implemented](https://bugs.chromium.org/p/chromium/issues/detail?id=973627) in Chrome/V8 and it adds 10%-20% overhead to garbage collection.
+The overhead applies only if there is a pending memroy measurement request.
