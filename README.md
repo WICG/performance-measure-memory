@@ -13,10 +13,10 @@ console.log(result);
 {
   bytes: 100*MB,
   breakdown: [
-    {bytes: 40*MB, globals: 2, type: 'js/window', origins: ['foo.com']},
-    {bytes: 30*MB, globals: 1, type: 'js/window', origins: ['bar.com']},
-    {bytes: 20*MB, globals: 1, type: 'js/worker', origins: ['foo.com']},
-    {bytes: 10*MB, globals: 3, type: 'dom', origins: ['foo.com', 'bar.com']},
+    {bytes: 40*MB, type: 'js/window', attribution: ['https://foo.com']},
+    {bytes: 30*MB, type: 'js/window', attribution: ['https://bar.com/iframe']},
+    {bytes: 20*MB, type: 'js/worker', attribution: ['https://foo.com/worker']},
+    {bytes: 10*MB, type: 'dom', attribution: ['https://foo.com', 'https://bar.com/iframe']},
   ]
 }
 ```
@@ -36,7 +36,7 @@ In this proposal we aim to fix these drawbacks and set the following requirement
 - The API does not leak cross-origin information.
 - The API measures memory usage of the web page including all its iframes and workers.
 - The API accounts only the objects allocated by the web page. Other web pages do not affect the result.
-- The API provides breakdown of the result by type and origin with implementation-specific granularity.
+- The API provides breakdown of the result by type and owner with implementation-specific granularity.
 
 ### Non-Goals
 - Precise memory measurement. Implementations are allowed to return an estimate because computing the precise result may be computationally expensive.
@@ -59,7 +59,7 @@ Our proposal combines this process memory API with the JS agent memory API.
 The main difference between our proposal and the process memory API is that the scope of the process memory API is limited to the current [JS agent cluster](https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism) (The proposal uses the old term -- "related similar-origin browsing contexts").
 This means that the API measures only same-site memory and does not measure cross-site iframes.
 In contrast to that, our API measures all JS agent clusters of the current [browsing context group](https://html.spec.whatwg.org/multipage/browsers.html#browsing-context-group).
-Besides that, our API provides breakdown of the result by type and origin.
+Besides that, our API provides breakdown of the result by type and owner.
 
 ### Memory pressure API
 There is a proposal for [memory pressure API](https://github.com/WICG/memory-pressure/blob/master/explainer.md) that notifies the application about system memory pressure events.
@@ -68,7 +68,7 @@ Our proposal has different [use cases](https://docs.google.com/document/d/1u21oa
 Thus the two proposals are orthogonal.
 
 ## API Proposal
-The API consists of a single asynchronous method `performance.measureMemory` that estimates memory usage of the web page and provides breakdown of the result by type and origin.
+The API consists of a single asynchronous method `performance.measureMemory` that estimates memory usage of the web page and provides breakdown of the result by type and owner.
 
 ```JavaScript
 const result = await performance.measureMemory();
@@ -77,28 +77,30 @@ console.log(result);
 {
   bytes: 100*MB,
   breakdown: [
-    {bytes: 40*MB, globals: 2, type: 'js/window', origins: ['foo.com']},
-    {bytes: 30*MB, globals: 1, type: 'js/window', origins: ['bar.com']},
-    {bytes: 20*MB, globals: 1, type: 'js/worker', origins: ['foo.com']},
-    {bytes: 10*MB, globals: 3, type: 'dom', origins: ['foo.com', 'bar.com']},
+    {bytes: 40*MB, type: 'js/window', attribution: ['https://foo.com']},
+    {bytes: 30*MB, type: 'js/window', attribution: ['https://bar.com/iframe']},
+    {bytes: 20*MB, type: 'js/worker', attribution: ['https://foo.com/worker']},
+    {bytes: 10*MB, type: 'dom', attribution: ['https://foo.com', 'https://bar.com/iframe']},
   ]
 }
 ```
 The `bytes` field contains the total estimate of web page's memory usage.
 
-Each entry of the `breakdown` array describes some portion of the memory.
-It lists all `origins` that use the memory portion.
-We expect implementations to differ in the granularity of origin attribution.
-Some implementations will provide accurate per-origin attribution so that the `origins` lists are singletons.
-Implementations that do not support per-origin attribution are allowed to list all origins of the web page.
+Each entry of the `breakdown` array describes some portion of the memory and attributes it to a set of windows and workers identified by URLs.
+We expect implementations to differ in the granularity of attribution.
+An implementation may return `attribution: []` indicating that the portion of the memory is attributed to the whole web page.
+The example above has fine-grained attribution for the JS memory and coarse-grained attribution for the DOM memory.
+(I.e., the implementation cannot distinguish whether the DOM memory is attributed to `https://foo.com` or `https://bar.com/iframe`.)
 
-Additionally we consider the number of `globals` (i.e. JS realms or frames) to be a useful signal for web pages
-that create iframes dynamically and want to estimate average iframe sizes.
+In order to prevent URL leaks, cross-origin iframes are considered opaque for the purposes of attribution.
+This means the memory of all iframes and workers nested in a cross-origin iframe is attributed to the cross-origin iframe.
+Additionally, the reported URL of a cross-origin iframe is the original URL of the iframe at load time because that URL is known to the web page.
+There are no restrictions for same-origin iframes because the web page can read their URLs at any time.
 
 The `type` field contains implementation specific description of the memory portion.
 Alternative design would be to have separate `types` and `context` fields:
 ```JavaScript
-  {bytes: 40*MB, globals: 2, types: ['js'], context:'window', origins: ['foo.com']},
+  {bytes: 40*MB, globals: 2, types: ['js'], context:'window', attribution: ['https://foo.com']},
 
 ```
 
@@ -108,9 +110,7 @@ Only [cross-origin isolated](https://developer.mozilla.org/en-US/docs/Web/API/Wi
 This prevents cross-origin information leaks because all iframes and resources have to explicitly opt in using CORP/CORS.
 Additionally it is guaranteed that a cross-origin isolated web page is not colocated with other web pages in the same address space.
 
-The `breakdown` field of the result lists origins of iframes embedded in the web page, which is new information that becomes available to the caller of the API.
-Since each iframe opts in using CORP/CORS, we do not consider this issue critical.
-On the other hand, providing per-origin breakdown makes the API results more actionable for webpages that embed many cross-origin iframes.
+All URLs reported in the `breakdown` part of the result are known to the web page, so there is no information leak.
 
 An attempt to invoke the API when
 `crossOriginIsolated === false` leads to promise rejection with a `SecurityError` DOM exception.
@@ -138,11 +138,11 @@ Note that such information can be obtained from the existing APIs (`navigator.us
 
 ## Performance Considerations
 The API with coarse-grained breakdown can be implemented efficiently provided that the browser does not colocate a cross-origin web page with other web pages in the same process.
-In such case the API can return the sizes of the heaps (JS, DOM, CSS, worker, etc) and list origins on each heap.
+In such case the API can return the sizes of the heaps (JS, DOM, CSS, worker, etc) with empty attributions.
 
-Fine-grained per-origin breakdown requires more expensive computation because objects from different origins may be allocated on the same heap.
-One possible implementation is to segregate objects by origin during allocation.
-Alternative implementation is to infer the object's origin while traversing the object graph during garbage collection.
+Fine-grained attribution requires more expensive computation because objects from different frames may be allocated on the same heap.
+One possible implementation is to segregate objects by frame during allocation.
+Alternative implementation is to infer the object's frame while traversing the object graph during garbage collection.
 This was implemented in Chrome/V8 and introduces 10%-20% overhead to garbage collection.
 See [Implementation Notes](IMPLEMENTATION_NOTES.md) for more details.
 

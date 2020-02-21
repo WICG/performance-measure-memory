@@ -2,20 +2,20 @@
 
 ## Approach 1: process isolation of web pages
 A fast implementation is possible if the browser puts a cross-origin isolated web page into a separate process.
-Such implementation simply returns the sizes of the relevant heaps and lists origins present on each heap.
-Note that the browser has to keep track of origins and workers of the web page, which slightly complicates the implementation.
+Such implementation simply returns the sizes of the relevant heaps and empty attributions.
 
-## Approach 2: heap segregation by origin
-An object that is allocated by JavaScript code can be attributed to the origin of [the running execution context](https://www.ecma-international.org/ecma-262/10.0/index.html#running-execution-context).
-Segregating objects by origin during allocation allows fast implementation of `performance.measureMemory` with fine-grained per-origin breakdown.
-This comes at the cost of a more complex allocator and heap organisation with a separate space/partition for each origin.
-Note that origin attribution is not precise for objects shared between multiple origins.
-Another subtlety is that the origin that keeps an object alive (i.e. retains the object) is not necessarily the same origin that allocated the object.
-Moreover, both origins may differ from [the origin of the object's constructor](https://tc39.es/ecma262/#sec-getfunctionrealm) This is because origins of the same JavaScript agent can synchronously script with each other and can pass objects to each other.
-The implementation can sidestep this problem by making the breakdown more coarse-grained and merging the memory usage of all origins of the same JavaScript agent.
+## Approach 2: heap segregation by JS realm
+An object that is allocated by JavaScript code can be attributed to the JS realm of [the running execution context](https://www.ecma-international.org/ecma-262/10.0/index.html#running-execution-context).
+Segregating objects by realm during allocation allows fast implementation of `performance.measureMemory` with fine-grained attribution.
+This comes at the cost of a more complex allocator and heap organisation with a separate space/partition for each realm.
+Note that attribution is not precise for objects shared between multiple realms.
+Another subtlety is that the realm that keeps an object alive (i.e. retains the object) is not necessarily the same realm that allocated the object.
+Moreover, both realms may differ from [the realm of the object's constructor](https://tc39.es/ecma262/#sec-getfunctionrealm).
+This is because realms of the same JavaScript agent can synchronously script with each other and can pass objects to each other.
+The implementation can sidestep this problem by making attribution more coarse-grained and merging the memory usage of all realms of the same JavaScript agent.
 
 ## Approach 3: accounting during garbage collection
-The following algorithm shows how to carry out per-origin memory measurement in the marking phase of a Mark-Sweep garbage collector.
+The following algorithm shows how to carry out per-realm memory measurement in the marking phase of a Mark-Sweep garbage collector.
 
 Setup:
 
@@ -30,7 +30,7 @@ Marking worklist draining:
 1. Pop an `object` from one of the non-empty worklists `worklist[realm]`, where `realm` can be also `unknown`.
 2. If `InferRealm(object)` succeeds, then change `realm` to its result.
 3. If `realm` is not `realms`, then it was created after the start of garbage collection and it does not have a worklist. In that case change `realm` to `unknown`.
-4. Account the size of `object` to the origin of `realm`.
+4. Account the size of `object` to `realm`.
 5. Iterate the reference in the object and push newly discovered to `worklist[realm]`.
 
 The algorithm precisely attributes objects with known realms.
