@@ -71,7 +71,7 @@ Thus the two proposals are orthogonal.
 
 ## API Proposal
 The API consists of a single asynchronous method `performance.measureMemory` that estimates memory usage of the web page and provides breakdown of the result by type and owner.
-More formally, the API estimates memory usage of all [JS agent clusters](https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism) of the current [browsing context group](https://html.spec.whatwg.org/multipage/browsers.html#browsing-context-group).
+More formally, the API estimates memory usage of all [JS agent clusters](https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism) of the current [browsing context group](https://html.spec.whatwg.org/multipage/browsers.html#browsing-context-group) including shared resources such as ServiceWorkers, SharedWorkers, SharedArrayBuffers.
 
 ```JavaScript
 const result = await performance.measureMemory();
