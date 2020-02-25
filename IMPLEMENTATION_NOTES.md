@@ -2,11 +2,13 @@
 
 ## Approach 1: process isolation of web pages
 A fast implementation is possible if the browser puts a cross-origin isolated web page into a separate process.
-Such implementation simply returns the sizes of the relevant heaps and empty attributions.
+Such an implementation can return the sizes of the relevant heaps with empty attributions.
+Inter-process communication may be required if cross-origin iframes are hosted in different processes.
 
 ## Approach 2: heap segregation by JS realm
+If the browser puts multiple web pages in the same process and the same heap, then it needs a way to distinguish objects belonging to different pages.
 An object that is allocated by JavaScript code can be attributed to the JS realm of [the running execution context](https://www.ecma-international.org/ecma-262/10.0/index.html#running-execution-context).
-Segregating objects by realm during allocation allows fast implementation of `performance.measureMemory` with fine-grained attribution.
+Segregating objects on the heap by realm during allocation provides a way to tell objects of different pages apart and additionally enables fine-grained per-frame attribution.
 This comes at the cost of a more complex allocator and heap organisation with a separate space/partition for each realm.
 Note that attribution is not precise for objects shared between multiple realms.
 Another subtlety is that the realm that keeps an object alive (i.e. retains the object) is not necessarily the same realm that allocated the object.
@@ -15,6 +17,7 @@ This is because realms of the same JavaScript agent can synchronously script wit
 The implementation can sidestep this problem by making attribution more coarse-grained and merging the memory usage of all realms of the same JavaScript agent.
 
 ## Approach 3: accounting during garbage collection
+An alternative to heap segregation is dynamic attribution of object during garbage collection.
 The following algorithm shows how to carry out per-realm memory measurement in the marking phase of a Mark-Sweep garbage collector.
 
 Setup:
@@ -27,7 +30,7 @@ For example, the function could return [the realm of the object's constructor](h
 5. Iterate roots and push the discovered objects onto `worklist[unknown]`.
 
 Marking worklist draining:
-1. Pop an `object` from one of the non-empty worklists `worklist[realm]`, where `realm` can be also `unknown`.
+1. Pop an `object` from one of the non-empty worklists `worklist[realm]`, where `realm` can also be `unknown`.
 2. If `InferRealm(object)` succeeds, then change `realm` to its result.
 3. If `realm` is not `realms`, then it was created after the start of garbage collection and it does not have a worklist. In that case change `realm` to `unknown`.
 4. Account the size of `object` to `realm`.
