@@ -13,10 +13,10 @@ console.log(result);
 {
   bytes: 100*MB,
   breakdown: [
-    {bytes: 40*MB, type: 'js/window', attribution: ['https://foo.com']},
-    {bytes: 30*MB, type: 'js/window', attribution: ['https://bar.com/iframe']},
-    {bytes: 20*MB, type: 'js/worker', attribution: ['https://foo.com/worker']},
-    {bytes: 10*MB, type: 'dom', attribution: ['https://foo.com', 'https://bar.com/iframe']},
+    {bytes: 40*MB, type: 'window', attribution: ['https://foo.com']},
+    {bytes: 30*MB, type: 'window', attribution: ['https://bar.com/iframe']},
+    {bytes: 20*MB, type: 'worker', attribution: ['https://foo.com/worker']},
+    {bytes: 10*MB, type: 'window', attribution: ['https://foo.com', 'https://bar.com/iframe']},
   ]
 }
 ```
@@ -80,10 +80,10 @@ console.log(result);
 {
   bytes: 100*MB,
   breakdown: [
-    {bytes: 40*MB, type: 'js/window', attribution: ['https://foo.com']},
-    {bytes: 30*MB, type: 'js/window', attribution: ['https://bar.com/iframe']},
-    {bytes: 20*MB, type: 'js/worker', attribution: ['https://foo.com/worker']},
-    {bytes: 10*MB, type: 'dom', attribution: ['https://foo.com', 'https://bar.com/iframe']},
+    {bytes: 40*MB, type: 'window', attribution: ['https://foo.com']},
+    {bytes: 30*MB, type: 'window', attribution: ['https://bar.com/iframe']},
+    {bytes: 20*MB, type: 'worker', attribution: ['https://foo.com/worker']},
+    {bytes: 10*MB, type: 'window', attribution: ['https://foo.com', 'https://bar.com/iframe']},
   ]
 }
 ```
@@ -92,20 +92,20 @@ The `bytes` field contains the total estimate of the web page's memory usage.
 Each entry of the `breakdown` array describes some portion of the memory and attributes it to a set of windows and workers identified by URLs.
 We expect implementations to differ in the granularity of attribution.
 An implementation may return `attribution: []` indicating that the portion of the memory is attributed to the whole web page.
-The example above has fine-grained attribution for the JS memory and coarse-grained attribution for the DOM memory.
-(I.e., the implementation cannot distinguish whether the DOM memory is attributed to `https://foo.com` or `https://bar.com/iframe`.)
+The example above has fine-grained attribution for first three entries and coarse-grained attribution for the last entry.
+(I.e., the implementation cannot distinguish whether the last memory is attributed to `https://foo.com` or `https://bar.com/iframe`.)
 
 In order to prevent URL leaks, cross-origin iframes are considered opaque for the purposes of attribution.
 This means the memory of all iframes and workers nested in a cross-origin iframe is attributed to the cross-origin iframe.
 Additionally, the reported URL of a cross-origin iframe is the original URL of the iframe at load time because that URL is known to the web page.
 There are no restrictions for same-origin iframes because the web page can read their URLs at any time.
 
-The `type` field contains implementation specific description of the memory portion.
-Alternative design would be to have separate `types` and `context` fields (or omit `context` altogether):
-```JavaScript
-  {bytes: 40*MB, types: ['js'], context:'window', attribution: ['https://foo.com']},
+The `type` field provides more information about the memory. It contains one of the following values:
 
-```
+- `'gpu'`: the memory was allocated on the Graphics Processing Unit (i.e. canvas memory).
+- `'shared'`: the memory is shared between workers and/or windows (e.g. memory of SharedArrayBuffers).
+- `'window'`: the memory is allocated by a window.
+- `'worker'`: the memory is allocated by a worker (including SharedWorker and ServiceWorker).
 
 Adding a `UASpecific` suffix would emphasize that the API result is implementation dependent:
 ```JavaScript
