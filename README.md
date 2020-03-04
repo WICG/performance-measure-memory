@@ -13,10 +13,10 @@ console.log(result);
 {
   bytes: 100*MB,
   breakdown: [
-    {bytes: 40*MB, type: 'js/window', attribution: ['https://foo.com']},
-    {bytes: 30*MB, type: 'js/window', attribution: ['https://bar.com/iframe']},
-    {bytes: 20*MB, type: 'js/worker', attribution: ['https://foo.com/worker']},
-    {bytes: 10*MB, type: 'dom', attribution: ['https://foo.com', 'https://bar.com/iframe']},
+    {bytes: 40*MB, type: 'window/js', attribution: ['https://foo.com']},
+    {bytes: 30*MB, type: 'window/js', attribution: ['https://bar.com/iframe']},
+    {bytes: 20*MB, type: 'worker/js', attribution: ['https://foo.com/worker']},
+    {bytes: 10*MB, type: 'window/dom', attribution: ['https://foo.com', 'https://bar.com/iframe']},
   ]
 }
 ```
@@ -80,10 +80,10 @@ console.log(result);
 {
   bytes: 100*MB,
   breakdown: [
-    {bytes: 40*MB, type: 'js/window', attribution: ['https://foo.com']},
-    {bytes: 30*MB, type: 'js/window', attribution: ['https://bar.com/iframe']},
-    {bytes: 20*MB, type: 'js/worker', attribution: ['https://foo.com/worker']},
-    {bytes: 10*MB, type: 'dom', attribution: ['https://foo.com', 'https://bar.com/iframe']},
+    {bytes: 40*MB, type: 'window/js', attribution: ['https://foo.com']},
+    {bytes: 30*MB, type: 'window/js', attribution: ['https://bar.com/iframe']},
+    {bytes: 20*MB, type: 'worker/js', attribution: ['https://foo.com/worker']},
+    {bytes: 10*MB, type: 'window/dom', attribution: ['https://foo.com', 'https://bar.com/iframe']},
   ]
 }
 ```
