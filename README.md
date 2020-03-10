@@ -16,22 +16,22 @@ console.log(result);
     {
       bytes: 40 * MB,
       attribution: ['https://foo.com'],
-      userAgentSpecificType: ['Window', 'JS']
+      userAgentSpecificTypes: ['Window', 'JS']
     },
     {
       bytes: 30 * MB,
       attribution: ['https://bar.com/iframe'],
-      userAgentSpecificType: ['JS', 'Window']
+      userAgentSpecificTypes: ['JS', 'Window']
     },
     {
       bytes: 20 * MB,
       attribution: ['https://foo.com/worker'],
-      userAgentSpecificType: ['JS', 'Worker']
+      userAgentSpecificTypes: ['JS', 'Worker']
     },
     {
       bytes: 10 * MB,
       attribution: ['https://foo.com', 'https://bar.com/iframe'],
-      userAgentSpecificType: ['Window', 'DOM']
+      userAgentSpecificTypes: ['Window', 'DOM']
     }
   ]
 }
@@ -99,22 +99,22 @@ console.log(result);
     {
       bytes: 40 * MB,
       attribution: ['https://foo.com'],
-      userAgentSpecificType: ['Window', 'JS']
+      userAgentSpecificTypes: ['Window', 'JS']
     },
     {
       bytes: 30 * MB,
       attribution: ['https://bar.com/iframe'],
-      userAgentSpecificType: ['JS', 'Window']
+      userAgentSpecificTypes: ['JS', 'Window']
     },
     {
       bytes: 20 * MB,
       attribution: ['https://foo.com/worker'],
-      userAgentSpecificType: ['JS', 'Worker']
+      userAgentSpecificTypes: ['JS', 'Worker']
     },
     {
       bytes: 10 * MB,
       attribution: ['https://foo.com', 'https://bar.com/iframe'],
-      userAgentSpecificType: ['Window', 'DOM']
+      userAgentSpecificTypes: ['Window', 'DOM']
     }
   ]
 }
@@ -132,7 +132,7 @@ This means the memory of all iframes and workers nested in a cross-origin iframe
 Additionally, the reported URL of a cross-origin iframe is the original URL of the iframe at load time because that URL is known to the web page.
 There are no restrictions for same-origin iframes because the web page can read their URLs at any time.
 
-The `userAgentSpecificType` field lists memory types associated with the memory portion.
+The `userAgentSpecificTypes` field lists memory types associated with the memory portion.
 As the name suggests each memory type is entirely implementation specific.
 In other words, memory types are not comparable across different browsers and may even change between different versions of the same browser.
 The order of memory types in the list is not significant and also depends on the implementation.
