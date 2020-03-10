@@ -137,6 +137,7 @@ As the name suggests each memory type is entirely implementation specific.
 In other words, memory types are not comparable across different browsers and may even change between different versions of the same browser.
 The order of memory types in the list is not significant and also depends on the implementation.
 An implementation may (but is not required to) use the following as a memory type:
+
 - the name of a JavaScript object type or constructor: `Function`, `SharedArrayBuffer`, `String`, etc.
 - the name of a WebIDL interface: `Window`, `Worker`, `HTMLElement`, etc.
 - implementation specific names: `JS`, `DOM`, `GPU`, `Detached`, `Code`, etc.
