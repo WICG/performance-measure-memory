@@ -1,6 +1,6 @@
 # performance.measureMemory API
 
-Last updated: 2020-03-04
+Last updated: 2020-03-09
 
 ## tl;dr
 We propose a new `peformance.measureMemory` API that estimates memory usage of a web page including all its iframes and workers. The API is available only for [cross-origin isolated](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/crossOriginIsolated) web pages that opt in using [the COOP+COEP headers](https://docs.google.com/document/d/1zDlfvfTJ_9e8Jdc8ehuV4zMEu9ySMCiTGMS9y0GU92k/edit) preventing cross-origin information leaks.
@@ -13,10 +13,26 @@ console.log(result);
 {
   bytes: 100*MB,
   breakdown: [
-    {bytes: 40*MB, type: 'window/js', attribution: ['https://foo.com']},
-    {bytes: 30*MB, type: 'window/js', attribution: ['https://bar.com/iframe']},
-    {bytes: 20*MB, type: 'worker/js', attribution: ['https://foo.com/worker']},
-    {bytes: 10*MB, type: 'window/dom', attribution: ['https://foo.com', 'https://bar.com/iframe']},
+    {
+      bytes: 40 * MB,
+      attribution: ['https://foo.com'],
+      userAgentSpecificTypes: ['Window', 'JS']
+    },
+    {
+      bytes: 30 * MB,
+      attribution: ['https://bar.com/iframe'],
+      userAgentSpecificTypes: ['JS', 'Window']
+    },
+    {
+      bytes: 20 * MB,
+      attribution: ['https://foo.com/worker'],
+      userAgentSpecificTypes: ['JS', 'Worker']
+    },
+    {
+      bytes: 10 * MB,
+      attribution: ['https://foo.com', 'https://bar.com/iframe'],
+      userAgentSpecificTypes: ['Window', 'DOM']
+    }
   ]
 }
 ```
@@ -80,10 +96,26 @@ console.log(result);
 {
   bytes: 100*MB,
   breakdown: [
-    {bytes: 40*MB, type: 'window/js', attribution: ['https://foo.com']},
-    {bytes: 30*MB, type: 'window/js', attribution: ['https://bar.com/iframe']},
-    {bytes: 20*MB, type: 'worker/js', attribution: ['https://foo.com/worker']},
-    {bytes: 10*MB, type: 'window/dom', attribution: ['https://foo.com', 'https://bar.com/iframe']},
+    {
+      bytes: 40 * MB,
+      attribution: ['https://foo.com'],
+      userAgentSpecificTypes: ['Window', 'JS']
+    },
+    {
+      bytes: 30 * MB,
+      attribution: ['https://bar.com/iframe'],
+      userAgentSpecificTypes: ['JS', 'Window']
+    },
+    {
+      bytes: 20 * MB,
+      attribution: ['https://foo.com/worker'],
+      userAgentSpecificTypes: ['JS', 'Worker']
+    },
+    {
+      bytes: 10 * MB,
+      attribution: ['https://foo.com', 'https://bar.com/iframe'],
+      userAgentSpecificTypes: ['Window', 'DOM']
+    }
   ]
 }
 ```
@@ -100,17 +132,20 @@ This means the memory of all iframes and workers nested in a cross-origin iframe
 Additionally, the reported URL of a cross-origin iframe is the original URL of the iframe at load time because that URL is known to the web page.
 There are no restrictions for same-origin iframes because the web page can read their URLs at any time.
 
-The `type` field contains implementation specific description of the memory portion.
-Alternative design would be to have separate `types` and `context` fields (or omit `context` altogether):
+The `userAgentSpecificTypes` field lists memory types associated with the memory portion.
+As the name suggests each memory type is entirely implementation specific.
+In other words, memory types are not comparable across different browsers and may even change between different versions of the same browser.
+The order of memory types in the list is not significant and also depends on the implementation.
+An implementation may (but is not required to) use the following as a memory type:
+
+- the name of a JavaScript object type or constructor: `Function`, `SharedArrayBuffer`, `String`, etc.
+- the name of a WebIDL interface: `Window`, `Worker`, `HTMLElement`, etc.
+- implementation specific names: `JS`, `DOM`, `GPU`, `Detached`, `Code`, etc.
+
+### Alternatives
+Adding a `userAgentSpecific` prefix to the `bytes` and `attribution` fields would emphasize that the API result is implementation dependent:
 ```JavaScript
-  {bytes: 40*MB, types: ['js'], context:'window', attribution: ['https://foo.com']},
-
-```
-
-Adding a `UASpecific` suffix would emphasize that the API result is implementation dependent:
-```JavaScript
-  {bytesUASpecific: 40*MB, ...},
-
+  {userAgentSpecificBytes: 40*MB, ...},
 ```
 Our preference however is to communicate the message in documentation and keep the API concise and consistent with other Performance APIs.
 
