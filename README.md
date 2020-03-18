@@ -1,6 +1,6 @@
 # performance.measureMemory API
 
-Last updated: 2020-03-09
+Last updated: 2020-03-18
 
 ## tl;dr
 We propose a new `peformance.measureMemory` API that estimates memory usage of a web page including all its iframes and workers. The API is available only for [cross-origin isolated](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/crossOriginIsolated) web pages that opt in using [the COOP+COEP headers](https://docs.google.com/document/d/1zDlfvfTJ_9e8Jdc8ehuV4zMEu9ySMCiTGMS9y0GU92k/edit) preventing cross-origin information leaks.
@@ -193,10 +193,51 @@ This was implemented in Chrome/V8 and introduces 10%-20% overhead to garbage col
 See [Implementation Notes](IMPLEMENTATION_NOTES.md) for more details.
 
 ## API Usage
-The API is well-suited for A/B testing, regressions detection, and general analysis of aggregate memory usage data from production.
-Results of individual API calls are less useful because they are sensitive to timing w.r.t web page and user actions.
+The API is intended for A/B testing, regressions detection, and general analysis of aggregate memory usage data from production.
+The results of individual calls are less useful because they are sensitive to the timing of web page events, user actions, and garbage collection.
 We recommend calling the API periodically every `N` minutes.
-Even better would be to use statistical sampling such as Poisson sampling to avoid the bias of a fixed sampling interval.
+Even better would be to use statistical sampling such as Poisson sampling to avoid the bias of a fixed sampling interval as shown below.
+
+```JavaScript
+// Starts statistical sampling of the memory usage.
+function scheduleMeasurement() {
+  if (!performance.measureMemory) {
+    console.log('performance.measureMemory is not available.');
+    return;
+  }
+  let interval = measurementInterval();
+  console.log('Scheduling memory measurement in ' +
+      `${Math.round(interval / 1000)} seconds.`);
+  setTimeout(performMeasurement, interval);
+}
+
+async function performMeasurement() {
+  // 1. Invoke performance.measureMemory().
+  let result;
+  try {
+    result = await performance.measureMemory();
+  } catch (error) {
+    if (error instanceof DOMException &&
+        error.name === 'SecurityError') {
+      console.log(`Cannot measure memory: ${error.message}.`);
+      return;
+    }
+  }
+  // 2. Record the result.
+  console.log(`Memory usage: ${result.bytes} bytes`);
+  console.log('Memory breakdown: ', result.breakdown);
+  // 3. Schedule the next measurement.
+  scheduleMeasurement();
+}
+
+// Returns a random interval in milliseconds that is
+// sampled with a Poisson process. It ensures that on
+// average there is one measurement every five minutes.
+function measurementInterval() {
+  const MEAN_INTERVAL_IN_MS = 5 * 60 * 1000;
+  return -Math.log(Math.random()) * MEAN_INTERVAL_IN_MS;
+}
+```
 
 Note that due to [COOP](https://docs.google.com/document/d/1u21oa3-R1FhHgrPsh8-mpb8dIFVj60wcFiM5FFrfIQA/edit#heading=h.6si74uwp7sq8) restriction only the main frame of the web page can call the API.
 (The `crossOriginIsolated` flag is always `false` for iframes.)
