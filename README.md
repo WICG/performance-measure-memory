@@ -222,6 +222,7 @@ async function performMeasurement() {
       console.log(`Cannot measure memory: ${error.message}.`);
       return;
     }
+    throw error;
   }
   // 2. Record the result.
   console.log(`Memory usage: ${result.bytes} bytes`);
