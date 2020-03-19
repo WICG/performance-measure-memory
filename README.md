@@ -87,7 +87,6 @@ Thus the two proposals are orthogonal.
 
 ## API Proposal
 The API consists of a single asynchronous method `performance.measureMemory` that estimates memory usage of the web page and provides breakdown of the result by type and owner.
-More formally, the API estimates memory usage of all [JS agent clusters](https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism) of the current [browsing context group](https://html.spec.whatwg.org/multipage/browsers.html#browsing-context-group).
 
 ```JavaScript
 const result = await performance.measureMemory();
@@ -149,11 +148,17 @@ Adding a `userAgentSpecific` prefix to the `bytes` and `attribution` fields woul
 ```
 Our preference however is to communicate the message in documentation and keep the API concise and consistent with other Performance APIs.
 
-### Shared Workers and Service Workers
-Shared/service workers have their own JS agent clusters and do not belong to any browsing context group.
-This means that the result of an API call on the main page does not account shared/service workers.
-The memory usage of a shared/service worker can be measured by calling the API in the context of that worker.
-The result of such a call accounts the whole JS agent cluster of the worker including any nested dedicated workers.
+### Scope
+The API is available in the contexts that we consider as top-level contexts.
+These are top-level windows, shared workers, and service workers.
+Invoking the API in other contexts such as iframes and dedicated workers throws an error.
+
+For a top-level window the API estimates memory usage of the window and all its iframes and dedicated workers.
+More formally, the API estimates memory usage of all [JS agent clusters](https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism) of the [browsing context group](https://html.spec.whatwg.org/multipage/browsers.html#browsing-context-group) of the window.
+
+In the shared/service worker case, the API estimates memory usage of the worker's JS agent cluster that includes all nested dedicated workers.
+
+With this setup there is no risk of double counting the memory of a shared/service worker if there are multiple windows using the worker.
 
 ## Security Considerations
 ### Cross-origin information leak
