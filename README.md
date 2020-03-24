@@ -120,7 +120,8 @@ console.log(result);
 ```
 The `bytes` field contains the total estimate of the web page's memory usage.
 
-Each entry of the `breakdown` array describes some portion of the memory and attributes it to a set of windows and workers identified by URLs.
+An implementation is allowed to return `breakdown: []` if breakdown is not available.
+Otherwise, each entry of the `breakdown` array describes some portion of the memory and attributes it to a set of windows and workers identified by URLs.
 We expect implementations to differ in the granularity of attribution.
 An implementation may return `attribution: []` indicating that the portion of the memory is attributed to the whole web page.
 The example above has fine-grained attribution for the JS memory and coarse-grained attribution for the DOM memory.
@@ -149,16 +150,16 @@ Adding a `userAgentSpecific` prefix to the `bytes` and `attribution` fields woul
 Our preference however is to communicate the message in documentation and keep the API concise and consistent with other Performance APIs.
 
 ### Scope
-The API is available in the contexts that we consider as top-level contexts.
-These are top-level windows, shared workers, and service workers.
-Invoking the API in other contexts such as iframes and dedicated workers throws an error.
-
-For a top-level window the API estimates memory usage of the window and all its iframes and dedicated workers.
-More formally, the API estimates memory usage of all [JS agent clusters](https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism) of the [browsing context group](https://html.spec.whatwg.org/multipage/browsers.html#browsing-context-group) of the window.
-
+The API is available for windows, shared workers, and service workers.
+When invoked in a window context, the API estimates memory usage of all [JS agent clusters](https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism) of the [browsing context group](https://html.spec.whatwg.org/multipage/browsers.html#browsing-context-group) of the window.
+Note that the result accounts for all iframes and nested dedicated workers.
 In the shared/service worker case, the API estimates memory usage of the worker's JS agent cluster that includes all nested dedicated workers.
 
-With this setup there is no risk of double counting the memory of a shared/service worker if there are multiple windows using the worker.
+The API is not available in a dedicated worker.
+There are two reasons for this design choice.
+First, the intended use of the API is to have a global memory monitor for a web page that performs statistical sampling of memory usage and sends the samples to the server for A/B testing and regression detection.
+Since the top-level context (a window or a shared/service worker) already measures all nested dedicated workers, invoking the API in a dedicated worker is likely a misuse of the API.
+The second reason is to simplify implementation of the API by ensuring that at most one thread in a JS agent cluster can request memory measurement for the cluster.
 
 ## Security Considerations
 ### Cross-origin information leak
@@ -181,6 +182,8 @@ try {
 }
 ```
 
+Invoking the API in a cross-origin iframe also throws a `SecurityError` DOM exception even if `crossOriginIsolated === true`.
+This ensures that cross-origin iframes cannot measure memory of their parents.
 
 ### Fingerprinting
 Implementations need to be careful to avoid leaking information about the underlying browser instance.
@@ -249,9 +252,6 @@ function measurementInterval() {
   return -Math.log(Math.random()) * MEAN_INTERVAL_IN_MS;
 }
 ```
-
-Note that due to [COOP](https://docs.google.com/document/d/1u21oa3-R1FhHgrPsh8-mpb8dIFVj60wcFiM5FFrfIQA/edit#heading=h.6si74uwp7sq8) restriction only the main frame of the web page can call the API.
-(The `crossOriginIsolated` flag is always `false` for iframes.)
 
 ## See Also
 
