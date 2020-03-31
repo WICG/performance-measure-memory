@@ -182,8 +182,8 @@ try {
 }
 ```
 
-Invoking the API in a cross-origin iframe also throws a `SecurityError` DOM exception even if `crossOriginIsolated === true`.
-This ensures that cross-origin iframes cannot measure memory of their parents.
+Invoking the API in an iframe that is cross-origin from the main window also throws a `SecurityError` DOM exception even if `crossOriginIsolated === true`.
+This ensures that cross-origin iframes cannot measure memory of the main window.
 
 ### Fingerprinting
 Implementations need to be careful to avoid leaking information about the underlying browser instance.
