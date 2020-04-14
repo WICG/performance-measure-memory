@@ -1,6 +1,6 @@
 # performance.measureMemory API
 
-Last updated: 2020-04-02
+Last updated: 2020-04-14
 
 ## tl;dr
 We propose a new `peformance.measureMemory` API that estimates memory usage of a web page including all its iframes and workers. The API is available only for [cross-origin isolated](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/crossOriginIsolated) web pages that opt in using [the COOP+COEP headers](https://docs.google.com/document/d/1zDlfvfTJ_9e8Jdc8ehuV4zMEu9ySMCiTGMS9y0GU92k/edit) preventing cross-origin information leaks.
@@ -131,6 +131,9 @@ In order to prevent URL leaks, cross-origin iframes are considered opaque for th
 This means the memory of all iframes and workers nested in a cross-origin iframe is attributed to the cross-origin iframe.
 Additionally, the reported URL of a cross-origin iframe is the original URL of the iframe at load time because that URL is known to the web page.
 There are no restrictions for same-origin iframes because the web page can read their URLs at any time.
+
+If the `breakdown` array is not empty, then the entries in the array are exclusive and complete.
+In other words, the memory portions do not overlap and their sizes sum up to the total `bytes`.
 
 The `userAgentSpecificTypes` field lists memory types associated with the memory portion.
 As the name suggests each memory type is entirely implementation specific.
