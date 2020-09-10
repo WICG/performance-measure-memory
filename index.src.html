@@ -34,9 +34,9 @@ urlPrefix: https://w3c.github.io/hr-time/; spec: HR-TIME-2
     text: Performance; url: #sec-performance
 urlPrefix: https://html.spec.whatwg.org/
   type: dfn
-    text: agent cluster map; for: browsing context group; url: multipage/browsers.html#agent-cluster-map
     text: cross-origin isolated; for: agent cluster; url: multipage/webappapis.html#cross-origin-isolated
     text: cross-origin isolation; url: multipage/webappapis.html#cross-origin-isolated
+    text: agent cluster map; for: browsing context group; url: multipage/browsers.html#agent-cluster-map
     text: id; for: element; url: multipage/dom.html#the-id-attribute
     text: src; for: frame; url: multipage/obsolete.html##dom-frame-src
   type: abstract-op
@@ -740,7 +740,7 @@ the [=WindowOrWorkerGlobalScope/memory attribution token=] field of the newly cr
     >     - ...
     >     - Set global object's [=WindowOrWorkerGlobalScope/memory attribution token=]
     >        to the result of [=obtaining a worker memory attribution token=] given
-    >        the global object and |outside settings|.
+    >        the global object and <var ignore>outside settings</var>.
 
 The [$create and initialize a Document object$] algorithm sets the [=WindowOrWorkerGlobalScope/memory attribution token=]
 field of the newly created global object:
