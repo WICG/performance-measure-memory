@@ -21,21 +21,24 @@ Complain About: accidental-2119 yes, missing-example-ids yes
 <pre class="anchors">
 urlPrefix: https://tc39.es/ecma262/; spec: ECMAScript
   type: dfn
+    text: Realm; url: sec-code-realms
     text: JavaScript realm; url: sec-code-realms
     text: JavaScript realms; url: sec-code-realms
     text: JavaScript agent clusters; url: sec-agent-clusters
     text: agent cluster; url: sec-agent-clusters
-    text: agent; url: sec-agents
+    text: agent cluster; for: agent; url: sec-agent-clusters
+    text: agent; for: Realm; url: sec-agents
     text: current Realm; url: sec-agent
 urlPrefix: https://w3c.github.io/hr-time/; spec: HR-TIME-2
   type: interface
     text: Performance; url: #sec-performance
 urlPrefix: https://html.spec.whatwg.org/
   type: dfn
-    text: top-level browsing context group; url: multipage/browsers.html#tlbc-group
-    text: cross-origin isolated; url: multipage/webappapis.html#cross-origin-isolated
+    text: agent cluster map; for: browsing context group; url: multipage/browsers.html#agent-cluster-map
+    text: cross-origin isolated; for: agent cluster; url: multipage/webappapis.html#cross-origin-isolated
     text: cross-origin isolation; url: multipage/webappapis.html#cross-origin-isolated
-    text: agent cluster map; url: multipage/browsers.html#agent-cluster-map
+    text: id; for: element; url: multipage/dom.html#the-id-attribute
+    text: src; for: frame; url: multipage/obsolete.html##dom-frame-src
   type: abstract-op
     text: run a worker; url: multipage/workers.html#run-a-worker
     text: set up a window environment settings object; url: multipage/browsing-the-web.html#set-up-a-window-environment-settings-object
@@ -44,23 +47,14 @@ urlPrefix: https://html.spec.whatwg.org/
 </pre>
 
 <pre class="link-defaults">
-spec:fetch; type:dfn; for:/; text:request
-spec:fetch; type:dfn; text: cors check
-spec:fetch; type:dfn; for:/; text:network error
-spec:url; type:dfn; for:/; text:url
-spec:html; type:dfn; for:/; text:browsing context
-spec:html; type:dfn; text:environment
 spec:html; type:dfn; text: browsing context group
-spec:fetch; type:dfn; for:/; text:response
-spec:fetch; type:dfn; for:/; text:cross-origin resource policy check
-spec:html; type:dfn; for:/; text:global object
-spec:html; type:dfn; for:/; text:container document
-spec:html; type:dfn; for:/; text:parent browsing context
 spec:infra; type:dfn; for:/; text:set
 spec:infra; type:dfn; for:/; text:list
 spec:infra; type:dfn; for:list; text:for each
 spec:html; type:dfn; for:Realm; text:settings object
 spec:webidl; type:dfn; text:resolve
+spec:webidl; type:dfn; text:identifier
+spec:dom; type:dfn; for:Element; text:local name
 </pre>
 
 
@@ -583,7 +577,7 @@ Top-level algorithms {#top-level-algorithms}
 --------------------------------------------
 <div algorithm>
   The <dfn method for="Performance">measureMemory()</dfn> method steps are:
-  1. [=Assert=]: [=current Realm=]'s [=agent=]'s [=agent cluster=]'s [=cross-origin isolated=] is true.
+  1. [=Assert=]: [=current Realm=]'s [=Realm/agent=]'s [=agent/agent cluster=]'s [=agent cluster/cross-origin isolated=] is true.
   1. If [=memory measurement allowed predicate=] given [=current Realm=] is false, then:
       1. Return [=a promise rejected with=] a "{{SecurityError}}" {{DOMException}}.
   1. Let |agent clusters| be the result of [=getting all agent clusters=] given [=current Realm=].
@@ -609,8 +603,8 @@ Top-level algorithms {#top-level-algorithms}
   given an [=JavaScript realm=]  |realm|:
   1. If |realm|'s [=Realm/global object=] is a {{Window}}, then:
       1. Let |group| be the [=browsing context group=] that contains |realm|'s [=Realm/global object=]'s [=Window/browsing context=].
-      1. Return the result of [=map/getting the values=] of |group|'s [=agent cluster map=].
-  1. Return « |realm|'s [=agent=]'s [=agent cluster=] ».
+      1. Return the result of [=map/getting the values=] of |group|'s [=browsing context group/agent cluster map=].
+  1. Return « |realm|'s [=Realm/agent=]'s [=agent/agent cluster=] ».
 </div>
 
 <div algorithm>
@@ -658,9 +652,9 @@ Converting an intermediate memory measurement to the result {#converting-an-inte
   1. If |token|'s [=memory attribution token/cross-origin aggregated flag=] is true, then
       1. Return a new {{MemoryAttribution}} whose:
           - {{MemoryAttribution/url}} is "`cross-origin-url`",
-          - {{MemoryAttribution/container}} is |token|'s [=memory attribution token/container=] if it is not null,
+          - {{MemoryAttribution/container}} is |token|'s [=memory attribution token/container=] if it is not null; otherwise, the {{MemoryAttribution/container}} entry is omitted,
           - {{MemoryAttribution/scope}} is "`cross-origin-aggregated`".
-  1. Let |scope name| be the result of [=getting the global scope name=] given |realm|'s [=Realm/global object=].
+  1. Let |scope name| be [=identifier=] of |realm|'s [=Realm/global object=]'s [=interface=].
   1. Return a new {{MemoryAttribution}} whose:
       - {{MemoryAttribution/url}} is |realm|'s [=Realm/settings object=]'s [=environment/creation URL=],
       - {{MemoryAttribution/container}} is |token|'s [=memory attribution token/container=] if it is not null,
@@ -707,38 +701,22 @@ Creating or obtaining a memory attribution token {#creating-or-obtaining-a-memor
 <div algorithm>
   To <dfn lt="extract container element attributes|extracting container element attributes">extract container element attributes</dfn>
   given an {{HTMLElement}} |container element|:
-  1. Switch on |container element|'s {{Element/tagName}}:
+  1. Switch on |container element|'s [=local name=]:
       <dl class="switch">
         : "iframe"
         :: Return a new {{MemoryAttributionContainer}} whose:
-            - {{MemoryAttributionContainer/id}} is |container element|'s {{Element/id}},
-            - {{MemoryAttributionContainer/src}} is |container element|'s {{HTMLIFrameElement/src}},
+            - {{MemoryAttributionContainer/id}} is |container element|'s [=element/id=] attribute,
+            - {{MemoryAttributionContainer/src}} is |container element|'s <{iframe/src}> attribute,
 
         : "frame"
         :: Return a new {{MemoryAttributionContainer}} whose:
-            - {{MemoryAttributionContainer/id}} is |container element|'s {{Element/id}},
-            - {{MemoryAttributionContainer/src}} is |container element|'s {{HTMLFrameElement/src}},
+            - {{MemoryAttributionContainer/id}} is |container element|'s [=element/id=] attribute,
+            - {{MemoryAttributionContainer/src}} is |container element|'s [=frame/src=] attribute,
 
         : "object"
         :: Return a new {{MemoryAttributionContainer}} whose:
-            - {{MemoryAttributionContainer/id}} is |container element|'s {{Element/id}},
-            - {{MemoryAttributionContainer/src}} is |container element|'s {{HTMLObjectElement/data}},
-      </dl>
-</div>
-
-<div algorithm>
-  To <dfn lt="get the global scope name|getting the global scope name">get the global scope name</dfn>
-  given a {{WindowOrWorkerGlobalScope}} |scope|:
-  1. Switch on |scope|:
-      <dl class="switch">
-        : if |scope| is a {{Window}}
-        :: Return "Window".
-        : if |scope| is a {{DedicatedWorkerGlobalScope}}
-        :: Return "DedicatedWorkerGlobalScope".
-        : if |scope| is a {{SharedWorkerGlobalScope}}
-        :: Return "SharedWorkerGlobalScope".
-        : if |scope| is a {{ServiceWorkerGlobalScope}}
-        :: Return "ServiceWorkerGlobalScope".
+            - {{MemoryAttributionContainer/id}} is |container element|'s [=element/id=] attribute,
+            - {{MemoryAttributionContainer/src}} is |container element|'s <{object/data}> attribute,
       </dl>
 </div>
 
