@@ -4,8 +4,7 @@ Status: CG-DRAFT
 Group: WICG
 Repository: WICG/performance-measure-memory
 Shortname: performance-measure-memory
-Markup Shorthands: markdown yes
-Markup Shorthands: css no
+Markup Shorthands: markdown yes, css no
 Level: None
 URL: https://wicg.github.io/performance-measure-memory/
 Editor: Ulan Degenbaev, Google https://www.google.com/, ulan@google.com
@@ -21,21 +20,22 @@ Complain About: accidental-2119 yes, missing-example-ids yes
 
 <pre class="anchors">
 urlPrefix: https://tc39.es/ecma262/; spec: ECMAScript
-  text: SharedArrayBuffer; type: interface; url: sec-sharedarraybuffer-objects
-  text: JavaScript realm; type: interface; url: sec-code-realms
-  text: JavaScript realms; type: interface; url: sec-code-realms
-  text: JavaScript agent clusters; type: interface; url: sec-agent-clusters
-urlPrefix: https://www.w3.org/TR/hr-time-2; spec: HR-TIME-2
+  type: dfn
+    text: JavaScript realm; url: sec-code-realms
+    text: JavaScript realms; url: sec-code-realms
+    text: JavaScript agent clusters; url: sec-agent-clusters
+    text: agent cluster; url: sec-agent-clusters
+    text: agent; url: sec-agents
+    text: current Realm; url: sec-agent
+urlPrefix: https://w3c.github.io/hr-time/; spec: HR-TIME-2
   type: interface
     text: Performance; url: #sec-performance
-  type: grammar
-    text: sh-token; url: #section-3.9
-  type: abstract-op
-    text: serialize Structured Header; url: #section-4.1
-    text: Structured Header parsing algorithm; url: #section-4.2.7
 urlPrefix: https://html.spec.whatwg.org/
   type: dfn
     text: top-level browsing context group; url: multipage/browsers.html#tlbc-group
+    text: cross-origin isolated; url: multipage/webappapis.html#cross-origin-isolated
+    text: cross-origin isolation; url: multipage/webappapis.html#cross-origin-isolated
+    text: agent cluster map; url: multipage/browsers.html#agent-cluster-map
   type: abstract-op
     text: run a worker; url: multipage/workers.html#run-a-worker
     text: set up a window environment settings object; url: multipage/browsing-the-web.html#set-up-a-window-environment-settings-object
@@ -60,6 +60,7 @@ spec:infra; type:dfn; for:/; text:set
 spec:infra; type:dfn; for:/; text:list
 spec:infra; type:dfn; for:list; text:for each
 spec:html; type:dfn; for:Realm; text:settings object
+spec:webidl; type:dfn; text:resolve
 </pre>
 
 
@@ -102,19 +103,18 @@ Introduction {#intro}
 <div nonnormative>
 The tradeoff between memory and performance is inherent in many algorithms and data-structures.
 Web developers today have multiple ways to measure the timing information and no standard way to measure the memory usage.
-This specification defines a [=performance.measureMemory=] API that estimates the memory usage of the web application including all its iframes and workers.
+This specification defines a {{Performance/measureMemory()|performance.measureMemory()}} API that estimates the memory usage of the web application including all its iframes and workers.
 The new API is intended for aggregating memory usage data from production. The main use cases are:
 - Regression detection during rollout of a new version of the web application to catch new memory leaks.
 - A/B testing a new feature to evaluate its memory impact.
-- Correlating memory usage with user metrics to understand the overall impact of memory usage.
-</div>
+- Correlating memory usage with user metrics to understand the overall impact of memory usage. </div>
 
 Examples {#examples}
 --------------------
 
-<div class="example" id="example1">
+<div class="example" id="example-simple-page">
 
-A `performance.measureMemory()` call returns a {{Promise}} and starts
+A {{Performance/measureMemory()|performance.measureMemory()}} call returns a {{Promise}} and starts
 an asynchronous measurement of the memory allocated by the page.
 
 ```javascript
@@ -175,7 +175,7 @@ Here the implementation does not break memory down by memory types.
 
 </div>
 
-<div class="example" id="example2">
+<div class="example" id="example-same-origin-iframe">
 
 For a page that embeds a same-origin iframe the result might attribute some memory
 to that iframe and provide diagnostic information for identifying the iframe:
@@ -253,7 +253,7 @@ An implementation is allowed to lump together some or all of iframe and page mem
 ```
 </div>
 
-<div class="example" id="example3">
+<div class="example" id="example-web-worker">
 For a page that spawns a web worker the result includes the URL of the worker.
 ```javascript
 {
@@ -291,9 +291,10 @@ Memory of shared and service workers is not included in the result.
 </div>
 
 
-<div class="example" id="example4">
-To get the memory usage of a shared/service worker, the `performance.measureMemory()`
+<div class="example" id="example-shared-worker">
+To get the memory usage of a shared/service worker, the {{Performance/measureMemory()|performance.measureMemory()}} 
 function needs to be invoked in the context of that worker.
+The result could be something like:
 ```javascript
 {
   bytes: 1000000,
@@ -313,7 +314,7 @@ function needs to be invoked in the context of that worker.
 ```
 </div>
 
-<div class="example" id="example5">
+<div class="example" id="example-cross-origin-iframe">
 If a page embeds a cross-origin iframe, then the URL of that iframe is not
 revealed to avoid information leaks. Only the container element
 (which is already known to the page) appears in the result.
@@ -380,7 +381,7 @@ Note that the `url` and `scope` fields of the cross-origin iframe entry have
 special values indicating that information is not available.
 </div>
 
-<div class="example" id="example6">
+<div class="example" id="example-same-and-cross-origin-iframes">
 If a cross-origin iframe embeds an iframe of the same origin as the main page,
 then the same-origin iframe is revealed in the result.
 Note that there is no information leak because the main page can find and read
@@ -454,80 +455,80 @@ Data model {#data-model}
 Memory measurement result {#memory-measurement-result}
 ------------------------------------------------------
 
-The `performance.measureMemory()` function returns a {{Promise}} that resolves to an instance of `MemoryMeasurement` dictionary:
+The {{Performance/measureMemory()|performance.measureMemory()}} function returns a {{Promise}} that resolves to an instance of {{MemoryMeasurement}} dictionary:
 
 <pre class="idl">
 dictionary MemoryMeasurement {
-  required unsigned long long bytes;
-  required sequence&lt;MemoryBreakdownEntry&gt; breakdown;
+  unsigned long long bytes;
+  sequence&lt;MemoryBreakdownEntry&gt; breakdown;
 };
 </pre>
 <dl class="domintro">
-:  <code>self . {{MemoryMeasurement/bytes}}</code>
+:  <code>measurement . {{MemoryMeasurement/bytes}}</code>
 :: A number that represents the total memory usage.
 
-:  <code>self . {{MemoryMeasurement/breakdown}}</code>
-:: A list that partitions the total {{MemoryMeasurement/bytes}} and provides attribution and type information. </dl>
+:  <code>measurement . {{MemoryMeasurement/breakdown}}</code>
+:: An array that partitions the total {{MemoryMeasurement/bytes}} and provides attribution and type information. </dl>
 
 <pre class="idl">
 dictionary MemoryBreakdownEntry {
-  required unsigned long long bytes;
-  required sequence&lt;MemoryAttribution&gt; attribution;
-  required sequence&lt;DOMString&gt; userAgentSpecificTypes;
+  unsigned long long bytes;
+  sequence&lt;MemoryAttribution&gt; attribution;
+  sequence&lt;DOMString&gt; userAgentSpecificTypes;
 };
 </pre>
 <dl class="domintro">
-:  <code>self . {{MemoryBreakdownEntry/bytes}}</code>
+:  <code>breakdown . {{MemoryBreakdownEntry/bytes}}</code>
 :: The size of the memory that this entry describes.
 
-:  <code>self . {{MemoryBreakdownEntry/attribution}}</code>
-:: A set of {{JavaScript realms}} specified by their URLs and/or container elements that use the memory.
+:  <code>breakdown . {{MemoryBreakdownEntry/attribution}}</code>
+:: An array of [=JavaScript realms=] specified by their URLs and/or container elements that use the memory.
 
-:  <code>self . {{MemoryBreakdownEntry/userAgentSpecificTypes}}</code>
-:: A set of implementation defined memory types associated with the memory. </dl>
+:  <code>breakdown . {{MemoryBreakdownEntry/userAgentSpecificTypes}}</code>
+:: An array of implementation defined memory types associated with the memory. </dl>
 
 <pre class="idl">
 dictionary MemoryAttribution {
-  DOMString url;
+  USVString url;
   MemoryAttributionContainer container;
-  required DOMString scope;
+  DOMString scope;
 };
 </pre>
 <dl class="domintro">
-:  <code>self . {{MemoryAttribution/url}}</code>
-:: If this attribution corresponds to a same-origin {{JavaScript realm}}, then this field contains realm's URL.
-   Otherwise, the attribution is for one or more cross-origin {{JavaScript realms}} and this field contains
+:  <code>attribution . {{MemoryAttribution/url}}</code>
+:: If this attribution corresponds to a same-origin [=JavaScript realm=], then this field contains realm's URL.
+   Otherwise, the attribution is for one or more cross-origin [=JavaScript realms=] and this field contains
    a sentinel value: `"cross-origin-url"`.
 
-:  <code>self . {{MemoryAttribution/container}}</code>
-:: Describes the DOM element that (maybe indirectly) contains the {{JavaScript realms}}.
+:  <code>attribution . {{MemoryAttribution/container}}</code>
+:: Describes the DOM element that (maybe indirectly) contains the [=JavaScript realms=].
    It may be empty if the attribution is for the same-origin top-level realm.
    Note that cross-origin realms cannot be top-level due to [=cross-origin isolation=].
 
-:  <code>self . {{MemoryAttribution/scope}}</code>
-:: Describes the type of the same-origin {{JavaScript realm}}:
+:  <code>attribution . {{MemoryAttribution/scope}}</code>
+:: Describes the type of the same-origin [=JavaScript realm=]:
    <code>"Window", "DedicatedWorkerGlobalScope", "SharedWorkerGlobalScope", "ServiceWorkerGlobalScope"</code>
    or contains <code>"cross-origin-aggregated"</code> for the cross-origin case. </dl>
 
 <pre class="idl">
 dictionary MemoryAttributionContainer {
   DOMString id;
-  DOMString src;
+  USVString src;
 };
 </pre>
 <dl class="domintro">
-:  <code>self . {{MemoryAttributionContainer/id}}</code>
+:  <code>container . {{MemoryAttributionContainer/id}}</code>
 :: The id attribute of the container element.
 
-:  <code>self . {{MemoryAttributionContainer/src}}</code>
-:: The src attribute of the container element. If the container element is an {{HTMLObjectElement}},
-   then this field contains the value of the {{HTMLObjectElement/data}} attribute.</dl>
+:  <code>container . {{MemoryAttributionContainer/src}}</code>
+:: The src attribute of the container element. If the container element is an <{object}> element,
+   then this field contains the value of the <{object/data}> attribute.</dl>
 
 Intermediate memory measurement {#intermediate-memory-measurement-section}
 --------------------------------------------------------------------------
 
 This specification assumes the existences of an implementation-defined algorithm that can measure
-the memory of objects allocated by a set of {{JavaScript agent clusters}}.
+the memory of objects allocated by a set of [=JavaScript agent clusters=].
 The result of such algorithm is an <dfn>intermediate memory measurement</dfn>,
 which is a [=set=] of [=intermediate memory breakdown entries=].
 
@@ -536,7 +537,7 @@ An <dfn>intermediate memory breakdown entry</dfn> is a [=struct=] containing the
 :: The size of the memory that this [=intermediate memory breakdown entry=] describes.
 
 :  <dfn for="intermediate memory breakdown entry">realms</dfn>
-:: A [=set=] of {{JavaScript realms}} to which the memory is attributed to.
+:: A [=set=] of [=JavaScript realms=] to which the memory is attributed to.
 
 :  <dfn for="intermediate memory breakdown entry">user agent specific types</dfn>
 :: A [=set=] of [=/strings=] specifying implementation defined memory types associated with the memory.
@@ -547,10 +548,10 @@ to an instance of {{MemoryMeasurement}}.
 Memory attribution token {#memory-attribution-token-section}
 ------------------------------------------------------------
 
-The link between an embedded {{JavaScript realm}} and its container element is ephemeral and is not guaranteed to always exist.
+The link between an embedded [=JavaScript realm=] and its container element is ephemeral and is not guaranteed to always exist.
 For example, navigation to another document in the container element or removal of the container element from the DOM tree severs the link.
 
-A <dfn>memory attribution token</dfn> provides a way to get from a {{JavaScript realm}} to its container element.
+A <dfn>memory attribution token</dfn> provides a way to get from a [=JavaScript realm=] to its container element.
 It is a [=struct=] containing the following [=struct/items=]:
 :  <dfn for="memory attribution token">container</dfn>
 :: An instance of {{MemoryAttributionContainer}}.
@@ -565,48 +566,58 @@ It is stored in a new internal field of {{WindowOrWorkerGlobalScope}} at constru
 Processing model {#processing-model}
 ====================================
 
+Extensions to the {{Performance}} interface {#extensions-to-performance}
+------------------------------------------------------------------------
+
+<pre class="idl">
+partial interface Performance {
+  Promise&lt;MemoryMeasurement&gt; measureMemory();
+};
+</pre>
+<dl class="domintro">
+:  <code>self . {{Performance/measureMemory()}}</code>
+:: A method that performs an asynchronous memory measurement. Details about the result of the method are in [[#memory-measurement-result]]. </dl>
+
+
 Top-level algorithms {#top-level-algorithms}
 --------------------------------------------
 <div algorithm>
-  <dfn>performance.measureMemory</dfn> must run the following steps:
-  1. Let |realm| be the [=current settings object=]'s [=environment settings object/Realm=].
-  1. [=Assert=]: |realm|'s [=agent=]'s [=agent cluster=]'s [=cross-origin-isolated=] is true.
-  1. Let |global object| be the [=current global object=].
+  The <dfn method for="Performance">measureMemory()</dfn> method steps are:
+  1. [=Assert=]: [=current Realm=]'s [=agent=]'s [=agent cluster=]'s [=cross-origin isolated=] is true.
+  1. If [=memory measurement allowed predicate=] given [=current Realm=] is false, then:
+      1. Return [=a promise rejected with=] a "{{SecurityError}}" {{DOMException}}.
+  1. Let |agent clusters| be the result of [=getting all agent clusters=] given [=current Realm=].
   1. Let |promise| be a new {{Promise}}.
-  1. If [=memory measurement allowed predicate=] given |global object| and [=current settings object=] is false, then:
-      1. Reject |promise| with a "Security Error" {{DOMException}}.
-  1. Let |agent clusters| be the result of [=getting all agent clusters=] given |realm|.
   1. Start asynchronous [=implementation-defined memory measurement=] given |agent clusters| and |promise|.
-  1. Return |promise|
+  1. Return |promise|.
 </div>
 
 <div algorithm>
   To evaluate <dfn>memory measurement allowed predicate</dfn>
-  given a {{WindowOrWorkerGlobalScope}} |global object| and [=environment settings object=] |settings object|:
+  given a [=JavaScript realm=] |realm|:
+  1. Let |global object| be |realm|'s [=Realm/global object=].
   1. If |global object| is a {{SharedWorkerGlobalScope}}, then return true.
   1. If |global object| is a {{ServiceWorkerGlobalScope}}, then return true.
-  1. If |global object| is a {{Window}} and |settings object|'s [=environment settings object/origin=]
-     is the same as |settings object|'s [=environment/top-level origin=], then return true.
+  1. If |global object| is a {{Window}} then
+        1. Let |settings object| be |realm|'s [=Realm/settings object=].
+        1. If |settings object|'s [=environment settings object/origin=] is the same as |settings object|'s [=environment/top-level origin=], then return true.
   1. Return false.
 </div>
 
 <div algorithm>
   To <dfn lt="getting all agent clusters|get all agent clusters">get all agent clusters</dfn>
-  given an {{JavaScript realm}}  |realm|:
-  1. If |realm|'s [=global object=] is a {{Window}}, then:
-      1. Let |browsing context| be |realm|'s [=settings object=]'s [=responsible document=]'s [=Document/browsing context=].
-      1. Let |agent clusters| be the result of [=map/getting the values=] of |browsing context|'s
-         [=browsing context group=]'s [=agent cluster map=].
-      1. Return |agent clusters|.
-  1. Return a singleton [=set=] of |realm|'s [=agent=]'s [=agent cluster=].
+  given an [=JavaScript realm=]  |realm|:
+  1. If |realm|'s [=Realm/global object=] is a {{Window}}, then:
+      1. Let |group| be the [=browsing context group=] that contains |realm|'s [=Realm/global object=]'s [=Window/browsing context=].
+      1. Return the result of [=map/getting the values=] of |group|'s [=agent cluster map=].
+  1. Return « |realm|'s [=agent=]'s [=agent cluster=] ».
 </div>
 
 <div algorithm>
   To perform <dfn>implementation-defined memory measurement</dfn> given a [=set=] of [=agent clusters=] |agent clusters| and
-  a {{Promise}} |promise| run these steps asynchronously:
-  1. Let |intermediate memory measurement| be implementation-defined memory measurement of |agent clusters|.
-  1. Let |memory measurement| be the result of [=creating a new memory measurement=] given |intermediate memory measurement|.
-  1. Queue a task that resolves |promise| with |memory measurement|.
+  a {{Promise}} |promise| run these steps [=in parallel=]:
+  1. Let |intermediate memory measurement| be an [=implementation-defined=] [=intermediate memory measurement=] of |agent clusters|.
+  1. [=Queue a global task=] on the TODO task source given |promise|'s [=relevant global object=] to [=resolve=] |promise| with the result of [=creating a new memory measurement=] given |intermediate memory measurement|.
 </div>
 
 
@@ -631,7 +642,7 @@ Converting an intermediate memory measurement to the result {#converting-an-inte
   To <dfn lt="creating a new memory breakdown entry|create a new memory breakdown entry">create a new memory breakdown entry</dfn>
   given an [=intermediate memory breakdown entry=]  |intermediate entry|:
   1. Let |attribution| a new [=list=].
-  1. [=set/For each=] {{JavaScript realm}} |realm| in |intermediate entry|'s [=intermediate memory breakdown entry/realms=]:
+  1. [=set/For each=] [=JavaScript realm=] |realm| in |intermediate entry|'s [=intermediate memory breakdown entry/realms=]:
       1. Let |attribution entry| be the result of [=creating a new memory attribution=] given |realm|.
       1. [=list/Append=] |attribution entry| to |attribution|.
   1. Return a new {{MemoryBreakdownEntry}} whose:
@@ -642,16 +653,16 @@ Converting an intermediate memory measurement to the result {#converting-an-inte
 
 <div algorithm>
   To <dfn lt="creating a new memory attribution|create a new memory attribution">create a new memory attribution</dfn>
-  given a {{JavaScript realm}} |realm|:
-  1. Let |token| be |realm|'s [=global object=]'s [=WindowOrWorkerGlobalScope/memory attribution token=].
+  given a [=JavaScript realm=] |realm|:
+  1. Let |token| be |realm|'s [=Realm/global object=]'s [=WindowOrWorkerGlobalScope/memory attribution token=].
   1. If |token|'s [=memory attribution token/cross-origin aggregated flag=] is true, then
       1. Return a new {{MemoryAttribution}} whose:
-          - {{MemoryAttribution/url}} is "cross-origin-url",
+          - {{MemoryAttribution/url}} is "`cross-origin-url`",
           - {{MemoryAttribution/container}} is |token|'s [=memory attribution token/container=] if it is not null,
-          - {{MemoryAttribution/scope}} is "cross-origin-aggregated".
-  1. Let |scope name| be the result of [=getting the global scope name=] given |realm|'s [=global object=].
+          - {{MemoryAttribution/scope}} is "`cross-origin-aggregated`".
+  1. Let |scope name| be the result of [=getting the global scope name=] given |realm|'s [=Realm/global object=].
   1. Return a new {{MemoryAttribution}} whose:
-      - {{MemoryAttribution/url}} is |realm|'s [=settings object=]'s [=environment/creation URL=],
+      - {{MemoryAttribution/url}} is |realm|'s [=Realm/settings object=]'s [=environment/creation URL=],
       - {{MemoryAttribution/container}} is |token|'s [=memory attribution token/container=] if it is not null,
       - {{MemoryAttribution/scope}} is |scope name|.
 </div>
@@ -660,7 +671,7 @@ Creating or obtaining a memory attribution token {#creating-or-obtaining-a-memor
 ----------------------------------------------------------------------------------------------------
 
 <div algorithm>
-  To <dfn lt="obtain window memory attribution token|obtaining window memory attribution token">obtain window memory attribution token</dfn>
+  To <dfn lt="obtain a window memory attribution token|obtaining a window memory attribution token">obtain a window memory attribution token</dfn>
   given an [=/origin=] |origin|, an [=/origin=] |parent origin|, an [=/origin=] |top-level origin|,
   an {{HTMLElement}} |container element|, an [=/memory attribution token=] |parent token|:
   1. If |container element| is null, then:
@@ -683,7 +694,7 @@ Creating or obtaining a memory attribution token {#creating-or-obtaining-a-memor
 </div>
 
 <div algorithm>
-  To <dfn lt="obtain worker memory attribution token|obtaining worker memory attribution token">obtain worker memory attribution token</dfn>
+  To <dfn lt="obtain a worker memory attribution token|obtaining a worker memory attribution token">obtain a worker memory attribution token</dfn>
   given {{WorkerGlobalScope}} |worker global scope|, an [=environment settings object=] |outside settings|:
   1. If |worker global scope| is a {{DedicatedWorkerGlobalScope}}, then
      return |outside settings|'s [=environment settings object/global object=]'s [=WindowOrWorkerGlobalScope/memory attribution token=].
@@ -735,23 +746,10 @@ Creating or obtaining a memory attribution token {#creating-or-obtaining-a-memor
 Integration with the existing specification {#integration-with-the-existing-specification}
 ==========================================================================================
 
-Extensions to the {{Performance}} interface {#extensions-to-performance}
-----------------------------------------------------------------------------------
-
-<pre class="idl">
-[Exposed=Window]
-partial interface Performance {
-  Promise&lt;MemoryMeasurement&gt; measureMemory();
-};
-</pre>
-<dl class="domintro">
-:  <code>self . {{Performance/measureMemory}}</code>
-:: A method that performs an asynchronous memory measurement. </dl>
-
 Extension to {{WindowOrWorkerGlobalScope}} {#extension-to-window-or-worker-global-scope}
 ----------------------------------------------------------------------------------------
 A new internal field is added to {{WindowOrWorkerGlobalScope}}:
-: A <dfn for="WindowOrWorkerGlobalScope">memory attribution token<dfn>
+: A <dfn for="WindowOrWorkerGlobalScope">memory attribution token</dfn>
 :: An [=/memory attribution token=] that is used for reporting the memory usage of this environment.
 
 Extensions to the existing algorithms {#extensions-to-the-existing-algorithms}
@@ -763,7 +761,7 @@ the [=WindowOrWorkerGlobalScope/memory attribution token=] field of the newly cr
     >    and the following customizations:
     >     - ...
     >     - Set global object's [=WindowOrWorkerGlobalScope/memory attribution token=]
-    >        to the result of [=obtaining worker memory attribution token=] given
+    >        to the result of [=obtaining a worker memory attribution token=] given
     >        the global object and |outside settings|.
 
 The [$create and initialize a Document object$] algorithm sets the [=WindowOrWorkerGlobalScope/memory attribution token=]
@@ -772,18 +770,18 @@ field of the newly created global object:
     >    5. Let |token| be an empty [=/memory attribution token=].
     >    6. If |browsingContext| is not a top-level browsing context, then:
     >       4. Let |parentToken| be |parentEnvironment|'s [=environment settings object/global object=]'s [=WindowOrWorkerGlobalScope/memory attribution token=].
-    >       5. Set |token| to the result of [=obtaining window memory attribution token=] with
+    >       5. Set |token| to the result of [=obtaining a window memory attribution token=] with
     >          |origin|, |parentEnvironment|'s origin, |topLevelOrigin|, |browsingContext|'s container, |parentToken|.
-    >    7. Else, set |token| to the result of [=obtaining window memory attribution token=] with
+    >    7. Else, set |token| to the result of [=obtaining a window memory attribution token=] with
     >       |origin|, null |topLevelOrigin|, null, null.
     >    8. Let |window global scope| be the [=Realm/global object=] of |realm execution context|'s Realm component.
     >    9. Set |window global scope|'s [=WindowOrWorkerGlobalScope/memory attribution token=] to |token|.
 
 The [$create a new browsing context$] algorithm sets the [=WindowOrWorkerGlobalScope/memory attribution token=] field of the newly created global object:
     > 11. Let |token| be an empty token.
-    > 12. If |embedder| is null, then set |token| to the result of [=obtaining window memory attribution token=] with |origin|,
+    > 12. If |embedder| is null, then set |token| to the result of [=obtaining a window memory attribution token=] with |origin|,
     >     null, |topLevelOrigin|, null, null.
-    > 13. Else, set |token| to the result of [=obtaining window memory attribution token=]
+    > 13. Else, set |token| to the result of [=obtaining a window memory attribution token=]
     >     with |origin|, |embedder|'s [=relevant settings object=]'s origin, |topLevelOrigin|, |embedder|,
     >     |embedder|'s [=relevant global object=]'s [=WindowOrWorkerGlobalScope/memory attribution token=].
     > 14. Let |window global scope| be the [=Realm/global object=] of |realm execution context|'s Realm component.
@@ -794,4 +792,4 @@ Acknowledgements {#acknowledgements}
 ====================================
 Thanks to Domenic Denicola and Shu-yu Guo for contributing to the API design and for reviewing this specification.
 
-Without implying any endorsement of this specification, thanks to Anne van Kesteren, Boris Zbarsky, Dominik Inführ, Chris Hamilton, Hannes Payer, Joe Mason, Kentaro Hara, L. David Baron, Mathias Bynens, Matthew Bolohan, Michael Lippautz, Neil Mckay Olga Belomestnykh, Per Parker, Philipp Weis, and Yoav Weiss, for their feedback and contributions.
+Also thanks to Anne van Kesteren, Boris Zbarsky, Dominik Inführ, Chris Hamilton, Hannes Payer, Joe Mason, Kentaro Hara, L. David Baron, Mathias Bynens, Matthew Bolohan, Michael Lippautz, Neil Mckay Olga Belomestnykh, Per Parker, Philipp Weis, and Yoav Weiss, for their feedback and contributions.
