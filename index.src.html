@@ -28,7 +28,7 @@ urlPrefix: https://tc39.es/ecma262/; spec: ECMAScript
     text: agent cluster; url: sec-agent-clusters
     text: agent cluster; for: agent; url: sec-agent-clusters
     text: agent; for: Realm; url: sec-agents
-    text: current Realm; url: sec-agent
+    text: the current Realm; url: sec-agent
 urlPrefix: https://w3c.github.io/hr-time/; spec: HR-TIME-2
   type: interface
     text: Performance; url: #sec-performance
@@ -37,13 +37,18 @@ urlPrefix: https://html.spec.whatwg.org/
     text: cross-origin isolated; for: agent cluster; url: multipage/webappapis.html#cross-origin-isolated
     text: cross-origin isolation; url: multipage/webappapis.html#cross-origin-isolated
     text: agent cluster map; for: browsing context group; url: multipage/browsers.html#agent-cluster-map
+  type: element-attr
     text: id; for: element; url: multipage/dom.html#the-id-attribute
-    text: src; for: frame; url: multipage/obsolete.html##dom-frame-src
+    text: src; for: frame; url: multipage/obsolete.html#dom-frame-src
   type: abstract-op
     text: run a worker; url: multipage/workers.html#run-a-worker
     text: set up a window environment settings object; url: multipage/browsing-the-web.html#set-up-a-window-environment-settings-object
     text: create and initialize a Document object; url: multipage/browsing-the-web.html#initialise-the-document-object
     text: create a new browsing context; url: multipage/browsers.html#creating-a-new-browsing-context
+urlPrefix: https://github.com/heycam/webidl
+  type: extended-attribute
+    text: CrossOriginIsolated; url: pull/883
+
 </pre>
 
 <pre class="link-defaults">
@@ -200,15 +205,15 @@ to that iframe and provide diagnostic information for identifying the iframe:
       bytes: 500000,
       attribution: [
         {
-          url: 'https://example.com/iframe.html'
+          url: "https://example.com/iframe.html"
           container: {
             id: "example-id",
-            src: 'redirect.html?target=iframe.html',
+            src: "redirect.html?target=iframe.html",
           },
-          scope: 'Window',
+          scope: "Window",
         }
       ],
-      userAgentSpecificTypes: ['JS', 'DOM'],
+      userAgentSpecificTypes: ["JS", "DOM"],
     },
   ],
 }
@@ -476,10 +481,10 @@ dictionary MemoryBreakdownEntry {
 :: The size of the memory that this entry describes.
 
 :  <code>breakdown . {{MemoryBreakdownEntry/attribution}}</code>
-:: An array of [=JavaScript realms=] specified by their URLs and/or container elements that use the memory.
+:: An array of URLs and/or container elements of the [=JavaScript realms=] that use the memory.
 
 :  <code>breakdown . {{MemoryBreakdownEntry/userAgentSpecificTypes}}</code>
-:: An array of implementation defined memory types associated with the memory. </dl>
+:: An array of [=implementation-defined=] memory types associated with the memory. </dl>
 
 <pre class="idl">
 dictionary MemoryAttribution {
@@ -496,13 +501,13 @@ dictionary MemoryAttribution {
 
 :  <code>attribution . {{MemoryAttribution/container}}</code>
 :: Describes the DOM element that (maybe indirectly) contains the [=JavaScript realms=].
-   It may be empty if the attribution is for the same-origin top-level realm.
+   This property might be absent if the attribution is for the same-origin top-level realm.
    Note that cross-origin realms cannot be top-level due to [=cross-origin isolation=].
 
 :  <code>attribution . {{MemoryAttribution/scope}}</code>
 :: Describes the type of the same-origin [=JavaScript realm=]:
    <code>"Window", "DedicatedWorkerGlobalScope", "SharedWorkerGlobalScope", "ServiceWorkerGlobalScope"</code>
-   or contains <code>"cross-origin-aggregated"</code> for the cross-origin case. </dl>
+   or <code>"cross-origin-aggregated"</code> for the cross-origin case. </dl>
 
 <pre class="idl">
 dictionary MemoryAttributionContainer {
@@ -512,16 +517,16 @@ dictionary MemoryAttributionContainer {
 </pre>
 <dl class="domintro">
 :  <code>container . {{MemoryAttributionContainer/id}}</code>
-:: The id attribute of the container element.
+:: The `id` attribute of the container element.
 
 :  <code>container . {{MemoryAttributionContainer/src}}</code>
-:: The src attribute of the container element. If the container element is an <{object}> element,
+:: The `src` attribute of the container element. If the container element is an <{object}> element,
    then this field contains the value of the <{object/data}> attribute.</dl>
 
 Intermediate memory measurement {#intermediate-memory-measurement-section}
 --------------------------------------------------------------------------
 
-This specification assumes the existences of an implementation-defined algorithm that can measure
+This specification assumes the existences of an [=implementation-defined=] algorithm that can measure
 the memory of objects allocated by a set of [=JavaScript agent clusters=].
 The result of such algorithm is an <dfn>intermediate memory measurement</dfn>,
 which is a [=set=] of [=intermediate memory breakdown entries=].
@@ -534,7 +539,7 @@ An <dfn>intermediate memory breakdown entry</dfn> is a [=struct=] containing the
 :: A [=set=] of [=JavaScript realms=] to which the memory is attributed to.
 
 :  <dfn for="intermediate memory breakdown entry">user agent specific types</dfn>
-:: A [=set=] of [=/strings=] specifying implementation defined memory types associated with the memory.
+:: A [=set=] of [=/strings=] specifying [=implementation-defined=] memory types associated with the memory.
 
 Algorithms defined in this specification show how to convert an [=intermediate memory measurement=]
 to an instance of {{MemoryMeasurement}}.
@@ -552,7 +557,7 @@ It is a [=struct=] containing the following [=struct/items=]:
 
 : <dfn for="memory attribution token">cross-origin aggregated flag</dfn>
 :: A [=boolean=] flag indicating whether the token was created for aggregating the memory usage of
-   cross-origin JavaSript realms.
+   cross-origin [=JavaScript realms=].
 
 It is stored in a new internal field of {{WindowOrWorkerGlobalScope}} at construction time and is always available for memory reporting.
 
@@ -565,11 +570,11 @@ Extensions to the {{Performance}} interface {#extensions-to-performance}
 
 <pre class="idl">
 partial interface Performance {
-  Promise&lt;MemoryMeasurement&gt; measureMemory();
+  [CrossOriginIsolated] Promise&lt;MemoryMeasurement&gt; measureMemory();
 };
 </pre>
 <dl class="domintro">
-:  <code>self . {{Performance/measureMemory()}}</code>
+:  <code>performance . {{Performance/measureMemory()}}</code>
 :: A method that performs an asynchronous memory measurement. Details about the result of the method are in [[#memory-measurement-result]]. </dl>
 
 
@@ -577,10 +582,10 @@ Top-level algorithms {#top-level-algorithms}
 --------------------------------------------
 <div algorithm>
   The <dfn method for="Performance">measureMemory()</dfn> method steps are:
-  1. [=Assert=]: [=current Realm=]'s [=Realm/agent=]'s [=agent/agent cluster=]'s [=agent cluster/cross-origin isolated=] is true.
-  1. If [=memory measurement allowed predicate=] given [=current Realm=] is false, then:
+  1. [=Assert=]: [=the current Realm=]'s [=Realm/agent=]'s [=agent/agent cluster=]'s [=agent cluster/cross-origin isolated=] is true.
+  1. If [=memory measurement allowed predicate=] given [=the current Realm=] is false, then:
       1. Return [=a promise rejected with=] a "{{SecurityError}}" {{DOMException}}.
-  1. Let |agent clusters| be the result of [=getting all agent clusters=] given [=current Realm=].
+  1. Let |agent clusters| be the result of [=getting all agent clusters=] given [=the current Realm=].
   1. Let |promise| be a new {{Promise}}.
   1. Start asynchronous [=implementation-defined memory measurement=] given |agent clusters| and |promise|.
   1. Return |promise|.
@@ -657,7 +662,7 @@ Converting an intermediate memory measurement to the result {#converting-an-inte
   1. Let |scope name| be [=identifier=] of |realm|'s [=Realm/global object=]'s [=interface=].
   1. Return a new {{MemoryAttribution}} whose:
       - {{MemoryAttribution/url}} is |realm|'s [=Realm/settings object=]'s [=environment/creation URL=],
-      - {{MemoryAttribution/container}} is |token|'s [=memory attribution token/container=] if it is not null,
+      - {{MemoryAttribution/container}} is |token|'s [=memory attribution token/container=] if it is not null, otherwise, the {{MemoryAttribution/container}} entry is omitted,
       - {{MemoryAttribution/scope}} is |scope name|.
 </div>
 
@@ -667,7 +672,7 @@ Creating or obtaining a memory attribution token {#creating-or-obtaining-a-memor
 <div algorithm>
   To <dfn lt="obtain a window memory attribution token|obtaining a window memory attribution token">obtain a window memory attribution token</dfn>
   given an [=/origin=] |origin|, an [=/origin=] |parent origin|, an [=/origin=] |top-level origin|,
-  an {{HTMLElement}} |container element|, an [=/memory attribution token=] |parent token|:
+  an {{HTMLElement}} |container element|, and a [=/memory attribution token=] |parent token|:
   1. If |container element| is null, then:
       1. [=Assert=]: |parent origin| is null.
       1. [=Assert=]: |parent token| is null.
@@ -705,17 +710,17 @@ Creating or obtaining a memory attribution token {#creating-or-obtaining-a-memor
       <dl class="switch">
         : "iframe"
         :: Return a new {{MemoryAttributionContainer}} whose:
-            - {{MemoryAttributionContainer/id}} is |container element|'s [=element/id=] attribute,
+            - {{MemoryAttributionContainer/id}} is |container element|'s <{element/id}> attribute,
             - {{MemoryAttributionContainer/src}} is |container element|'s <{iframe/src}> attribute,
 
         : "frame"
         :: Return a new {{MemoryAttributionContainer}} whose:
-            - {{MemoryAttributionContainer/id}} is |container element|'s [=element/id=] attribute,
-            - {{MemoryAttributionContainer/src}} is |container element|'s [=frame/src=] attribute,
+            - {{MemoryAttributionContainer/id}} is |container element|'s <{element/id}> attribute,
+            - {{MemoryAttributionContainer/src}} is |container element|'s <{frame/src}> attribute,
 
         : "object"
         :: Return a new {{MemoryAttributionContainer}} whose:
-            - {{MemoryAttributionContainer/id}} is |container element|'s [=element/id=] attribute,
+            - {{MemoryAttributionContainer/id}} is |container element|'s <{element/id}> attribute,
             - {{MemoryAttributionContainer/src}} is |container element|'s <{object/data}> attribute,
       </dl>
 </div>
