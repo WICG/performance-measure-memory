@@ -680,16 +680,16 @@ Creating or obtaining a memory attribution token {#creating-or-obtaining-a-memor
       1. Return a new [=/memory attribution token=] whose:
           - [=memory attribution token/container=] is null,
           - [=memory attribution token/cross-origin aggregated flag=] is false.
+  1. If |parent origin| is not equal to |top-level origin|, then:
+      1. Return |parent token|.
   1. Let |container| be the result of [=extracting container element attributes=] given |container element|.
   1. If |origin| is equal to |top-level origin|, then:
       1. Return a new [=/memory attribution token=] whose:
           - [=memory attribution token/container=] is |container|,
           - [=memory attribution token/cross-origin aggregated flag=] is false.
-  1. If |parent origin| is equal to |top-level origin|, then:
-      1. Return a new [=/memory attribution token=] whose:
-          - [=memory attribution token/container=] is |container|,
-          - [=memory attribution token/cross-origin aggregated flag=] is true.
-  1. Return |parent token|.
+  1. Return a new [=/memory attribution token=] whose:
+      - [=memory attribution token/container=] is |container|,
+      - [=memory attribution token/cross-origin aggregated flag=] is true.
 </div>
 
 <div algorithm>
