@@ -28,13 +28,13 @@ attribution: [
 ]
 ```
 
-Chrome 88 will start using the new format.
+Chrome 89 will start using the new format.
 
 ## Security differences
 The origin trial implementation relies on [Site Isolation](https://developers.google.com/web/updates/2018/07/site-isolation) for security whereas the explainer requires [cross-origin isolation](https://developers.google.com/web/updates/2018/07/site-isolation).
 In practice this means that the API will likely be available on desktop Chrome than on mobile Chrome because Site Isolation is enabled by default on desktop Chrome.
 
-Chrome 88 will be gated behind cross-origin isolation.
+Chrome 89 will be gated behind cross-origin isolation.
 
 ## Scope differences
 The implementation measures only JavaScript memory of the main window and all **same-site** iframes and related windows.
@@ -42,7 +42,7 @@ The implementation measures only JavaScript memory of the main window and all **
 The API ignores the memory usage of non-JavaScript objects.
 
 Chrome 87 additionally measures memory usage of dedicated workers, but does not provide their URLs.
-Chrome 88 will add support for cross-site iframes and will provide URLs for workers.
+Chrome 89 will add support for cross-site iframes and will provide URLs for workers.
 
 ## Other caveats
 The implementation may take up to 20 seconds to complete the memory measurement.
