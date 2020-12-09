@@ -24,7 +24,6 @@ urlPrefix: https://tc39.es/ecma262/; spec: ECMAScript
     text: Realm; url: sec-code-realms
     text: JavaScript realm; url: sec-code-realms
     text: JavaScript realms; url: sec-code-realms
-    text: JavaScript agent clusters; url: sec-agent-clusters
     text: agent cluster; url: sec-agent-clusters
     text: agent cluster; for: agent; url: sec-agent-clusters
     text: agent; for: Realm; url: sec-agents
@@ -34,8 +33,9 @@ urlPrefix: https://w3c.github.io/hr-time/; spec: HR-TIME-2
     text: Performance; url: #sec-performance
 urlPrefix: https://html.spec.whatwg.org/
   type: dfn
-    text: cross-origin isolated; for: agent cluster; url: multipage/webappapis.html#cross-origin-isolated
-    text: cross-origin isolation; url: multipage/webappapis.html#cross-origin-isolated
+    text: cross-origin isolated capability; for: environment settings object; url: multipage/webappapis.html#concept-settings-object-cross-origin-isolated-capability
+    text: cross-origin isolated; url: multipage/webappapis.html#concept-settings-object-cross-origin-isolated-capability
+    text: cross-origin isolation; url: multipage/webappapis.html#concept-settings-object-cross-origin-isolated-capability
     text: agent cluster map; for: browsing context group; url: multipage/browsers.html#agent-cluster-map
   type: element-attr
     text: id; for: element; url: multipage/dom.html#the-id-attribute
@@ -526,10 +526,14 @@ dictionary MemoryAttributionContainer {
 Intermediate memory measurement {#intermediate-memory-measurement-section}
 --------------------------------------------------------------------------
 
-This specification assumes the existences of an [=implementation-defined=] algorithm that can measure
-the memory of objects allocated by a set of [=JavaScript agent clusters=].
-The result of such algorithm is an <dfn>intermediate memory measurement</dfn>,
+This specification assumes the existence of an [=implementation-defined=] algorithm that measures
+the memory usage of the given set of [=agent clusters=].
+The result of such an algorithm is an <dfn>intermediate memory measurement</dfn>,
 which is a [=set=] of [=intermediate memory breakdown entries=].
+
+To reduce fingerprinting risks the result must include only the memory related to the web platform objects allocated or used by the given set of agent clusters.
+This, for example, excludes the memory of user-agent-specific extensions and the baseline memory of an empty page.
+The memory must be accounted at the address space level to exclude any platform-specific memory optimizations such memory compression and lazy memory committing.
 
 An <dfn>intermediate memory breakdown entry</dfn> is a [=struct=] containing the following [=struct/items=]:
 :  <dfn for="intermediate memory breakdown entry">bytes</dfn>
@@ -582,7 +586,7 @@ Top-level algorithms {#top-level-algorithms}
 --------------------------------------------
 <div algorithm>
   The <dfn method for="Performance">measureMemory()</dfn> method steps are:
-  1. [=Assert=]: [=the current Realm=]'s [=Realm/agent=]'s [=agent/agent cluster=]'s [=agent cluster/cross-origin isolated=] is true.
+  1. [=Assert=]: [=the current Realm=]'s [=Realm/settings objects=]'s [=environment settings object/cross-origin isolated capability=] is true.
   1. If [=memory measurement allowed predicate=] given [=the current Realm=] is false, then:
       1. Return [=a promise rejected with=] a "{{SecurityError}}" {{DOMException}}.
   1. Let |agent clusters| be the result of [=getting all agent clusters=] given [=the current Realm=].
@@ -770,6 +774,32 @@ The [$create a new browsing context$] algorithm sets the [=WindowOrWorkerGlobalS
     > 14. Let |window global scope| be the [=Realm/global object=] of |realm execution context|'s Realm component.
     > 15. Set |window global scope|'s [=WindowOrWorkerGlobalScope/memory attribution token=] to |token|.
 
+Privacy and Security {#privacy-and-security}
+==============================================
+<div nonnormative>
+
+Cross-origin information leak {#information-leak}
+-------------------------------------------------
+
+The URLs and other string values that appear in the result are guaranteed to be known to the origin that invokes the API.
+
+The only information that is exposed cross-origin is the size information provided in {{MemoryMeasurement/bytes|MemoryMeasurement.bytes}} and  {{MemoryBreakdownEntry/bytes|MemoryBreakdownEntry.bytes}}.
+The API relies on the [=cross-origin isolation=] mechanism to mitigate cross-origin size information leaks.
+Specifically, the API relies on the invariant that all loaded resources loaded have opted in to be embeddable and legible by their embedding origin.
+
+Fingerprinting {#fingerprinting}
+--------------------------------
+
+The result of the API depends only on the objects allocated by the web page itself and does not include unrelated memory such as the baseline memory usage of an empty web page.
+This means the same user agent binary running on two different devices should produce the same results for a fixed web page.
+
+A web page can infer the following information about the user agent:
+- the bitness of the user agent (32-bit vs 64-bit).
+- the version of the user agent to some extent.
+
+Similar information can be obtained from the existing APIs ({{NavigatorID/userAgent|navigator.userAgent}}, {{NavigatorID/platform|navigator.platform}}).
+The bitness of the user agent can also be inferred by measuring the run time of 32-bit and 64-bit operations.
+</div>
 
 Acknowledgements {#acknowledgements}
 ====================================
