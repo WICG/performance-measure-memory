@@ -775,7 +775,7 @@ The [$create a new browsing context$] algorithm sets the [=WindowOrWorkerGlobalS
     > 15. Set |window global scope|'s [=WindowOrWorkerGlobalScope/memory attribution token=] to |token|.
 
 Privacy and Security {#privacy-and-security}
-==============================================
+============================================
 <div nonnormative>
 
 Cross-origin information leak {#information-leak}
@@ -785,7 +785,7 @@ The URLs and other string values that appear in the result are guaranteed to be 
 
 The only information that is exposed cross-origin is the size information provided in {{MemoryMeasurement/bytes|MemoryMeasurement.bytes}} and  {{MemoryBreakdownEntry/bytes|MemoryBreakdownEntry.bytes}}.
 The API relies on the [=cross-origin isolation=] mechanism to mitigate cross-origin size information leaks.
-Specifically, the API relies on the invariant that all loaded resources loaded have opted in to be embeddable and legible by their embedding origin.
+Specifically, the API relies on the invariant that all loaded resources have opted in to be embeddable and legible by their embedding origin.
 
 Fingerprinting {#fingerprinting}
 --------------------------------
