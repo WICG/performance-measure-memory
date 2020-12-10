@@ -136,10 +136,17 @@ For a simple page without iframes and workers the result might look as follows:
       ],
       userAgentSpecificTypes: ["JS", "DOM"],
     },
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
+    },
   ],
 }
 ```
 Here all memory is attributed to the main page.
+The entry with `bytes: 0` is present in the breakdown list to encourage processing of the result in a generic way without hardcoding specific entries.
+Such an entry is inserted at a random position if the list is not empty.
 
 Other possible valid results:
 ```javascript
@@ -154,6 +161,11 @@ Here the implementation provides only the total memory usage.
 {
   bytes: 1000000,
   breakdown: [
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
+    },
     {
       bytes: 1000000,
       attribution: [
@@ -196,7 +208,12 @@ to that iframe and provide diagnostic information for identifying the iframe:
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      userAgentSpecificTypes: ["DOM", "JS"],
+    },
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
     },
     {
       bytes: 500000,
@@ -244,6 +261,11 @@ An implementation is allowed to lump together some or all of iframe and page mem
       ],
       userAgentSpecificTypes: ["JS", "DOM"],
     },
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
+    },
   ],
 };
 ```
@@ -255,6 +277,11 @@ For a page that spawns a web worker the result includes the URL of the worker.
 {
   bytes: 1800000,
   breakdown: [
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
+    },
     {
       bytes: 1000000,
       attribution: [
@@ -304,6 +331,11 @@ The result could be something like:
         },
       ],
       userAgentSpecificTypes: ["JS"],
+    },
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
     },
   ],
 }
@@ -357,6 +389,11 @@ All memory of these resources is attributed to the first iframe.
       userAgentSpecificTypes: ["JS", "DOM"],
     },
     {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
+    },
+    {
       bytes: 1400000,
       attribution: [
         {
@@ -368,7 +405,7 @@ All memory of these resources is attributed to the first iframe.
           scope: "cross-origin-aggregated",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      userAgentSpecificTypes: ["DOM", "JS"],
     },
   ],
 }
@@ -410,7 +447,12 @@ example.com (1000000 bytes)
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      userAgentSpecificTypes: ["DOM", "JS"],
+    },
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
     },
     {
       bytes: 500000,
@@ -424,7 +466,7 @@ example.com (1000000 bytes)
           scope: "cross-origin-aggregated",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      userAgentSpecificTypes: ["DOM", "JS"],
     },
     {
       bytes: 200000,
@@ -630,9 +672,14 @@ Converting an intermediate memory measurement to the result {#converting-an-inte
   1. [=For each=] [=intermediate memory breakdown entry=] |intermediate entry| in |intermediate measurement|:
       1. Set |bytes| to |bytes| plus |intermediate entry|'s [=intermediate memory breakdown entry/bytes=].
   1. Let |breakdown| be a new [=list=].
+  1. [=list/Append=] to |breakdown| a new {{MemoryBreakdownEntry}} whose:
+      - {{MemoryBreakdownEntry/bytes}} is 0,
+      - {{MemoryBreakdownEntry/attribution}} is « »,
+      - {{MemoryBreakdownEntry/userAgentSpecificTypes}} is « ».
   1. [=set/For each=] [=intermediate memory breakdown entry=] |intermediate entry| in |intermediate measurement|:
       1. Let |breakdown entry| be the result of [=creating a new memory breakdown entry=] given |intermediate entry|.
       1. [=list/Append=] |breakdown entry| to |breakdown|.
+  1. Randomize the order of the items in |breakdown|.
   1. Return a new {{MemoryMeasurement}} whose:
       - {{MemoryMeasurement/bytes}} is |bytes|,
       - {{MemoryMeasurement/breakdown}} is |breakdown|.
@@ -645,10 +692,12 @@ Converting an intermediate memory measurement to the result {#converting-an-inte
   1. [=set/For each=] [=JavaScript realm=] |realm| in |intermediate entry|'s [=intermediate memory breakdown entry/realms=]:
       1. Let |attribution entry| be the result of [=creating a new memory attribution=] given |realm|.
       1. [=list/Append=] |attribution entry| to |attribution|.
+  1. Let |types| be |intermediate entry|'s [=intermediate memory breakdown entry/user agent specific types=].
+  1. Randomize the order of the items in |types|.
   1. Return a new {{MemoryBreakdownEntry}} whose:
       - {{MemoryBreakdownEntry/bytes}} is |intermediate entry|'s [=intermediate memory breakdown entry/bytes=],
       - {{MemoryBreakdownEntry/attribution}} is |attribution|,
-      - {{MemoryBreakdownEntry/userAgentSpecificTypes}} is |intermediate entry|'s [=intermediate memory breakdown entry/user agent specific types=].
+      - {{MemoryBreakdownEntry/userAgentSpecificTypes}} is |types|.
 </div>
 
 <div algorithm>
