@@ -33,9 +33,6 @@ urlPrefix: https://w3c.github.io/hr-time/; spec: HR-TIME-2
     text: Performance; url: #sec-performance
 urlPrefix: https://html.spec.whatwg.org/
   type: dfn
-    text: cross-origin isolated capability; for: environment settings object; url: multipage/webappapis.html#concept-settings-object-cross-origin-isolated-capability
-    text: cross-origin isolated; url: multipage/webappapis.html#concept-settings-object-cross-origin-isolated-capability
-    text: cross-origin isolation; url: multipage/webappapis.html#concept-settings-object-cross-origin-isolated-capability
     text: agent cluster map; for: browsing context group; url: multipage/browsers.html#agent-cluster-map
   type: element-attr
     text: id; for: element; url: multipage/dom.html#the-id-attribute
@@ -502,7 +499,7 @@ dictionary MemoryAttribution {
 :  <code>attribution . {{MemoryAttribution/container}}</code>
 :: Describes the DOM element that (maybe indirectly) contains the [=JavaScript realms=].
    This property might be absent if the attribution is for the same-origin top-level realm.
-   Note that cross-origin realms cannot be top-level due to [=cross-origin isolation=].
+   Note that cross-origin realms cannot be top-level due to [=environment settings object/cross-origin isolated capability|cross-origin isolation=].
 
 :  <code>attribution . {{MemoryAttribution/scope}}</code>
 :: Describes the type of the same-origin [=JavaScript realm=]:
@@ -783,8 +780,8 @@ Cross-origin information leak {#information-leak}
 
 The URLs and other string values that appear in the result are guaranteed to be known to the origin that invokes the API.
 
-The only information that is exposed cross-origin is the size information provided in {{MemoryMeasurement/bytes|MemoryMeasurement.bytes}} and  {{MemoryBreakdownEntry/bytes|MemoryBreakdownEntry.bytes}}.
-The API relies on the [=cross-origin isolation=] mechanism to mitigate cross-origin size information leaks.
+The only information that is exposed cross-origin is the size information provided in {{MemoryMeasurement/bytes|memoryMeasurement.bytes}} and  {{MemoryBreakdownEntry/bytes|memoryBreakdownEntry.bytes}}.
+The API relies on the [=environment settings object/cross-origin isolated capability|cross-origin isolation=] mechanism to mitigate cross-origin size information leaks.
 Specifically, the API relies on the invariant that all loaded resources have opted in to be embeddable and legible by their embedding origin.
 
 Fingerprinting {#fingerprinting}
@@ -798,7 +795,7 @@ A web page can infer the following information about the user agent:
 - the version of the user agent to some extent.
 
 Similar information can be obtained from the existing APIs ({{NavigatorID/userAgent|navigator.userAgent}}, {{NavigatorID/platform|navigator.platform}}).
-The bitness of the user agent can also be inferred by measuring the run time of 32-bit and 64-bit operations.
+The bitness of the user agent can also be inferred by measuring the runtime of 32-bit and 64-bit operations.
 </div>
 
 Acknowledgements {#acknowledgements}
