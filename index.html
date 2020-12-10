@@ -1224,7 +1224,7 @@ Possible extra rowspan handling
   <link href="https://www.w3.org/StyleSheets/TR/2016/cg-draft" rel="stylesheet">
   <meta content="Bikeshed version 40de15f9, updated Thu Jun 11 17:47:04 2020 -0700" name="generator">
   <link href="https://wicg.github.io/performance-measure-memory/" rel="canonical">
-  <meta content="2dc2c55e1d74299b9cb23ab4dd29169df0de7a2d" name="document-revision">
+  <meta content="18baab56a2ca7c229b369bf19e6d21f853c3935f" name="document-revision">
 <style>
 /* domintro from https://resources.whatwg.org/standard.css */
 .domintro {
@@ -1513,7 +1513,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">Measure Memory API</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Community Group Report, <time class="dt-updated" datetime="2020-10-20">20 October 2020</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Community Group Report, <time class="dt-updated" datetime="2020-12-10">10 December 2020</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -1574,7 +1574,13 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
       <li><a href="#extension-to-window-or-worker-global-scope"><span class="secno">4.1</span> <span class="content">Extension to <code class="idl"><span>WindowOrWorkerGlobalScope</span></code></span></a>
       <li><a href="#extensions-to-the-existing-algorithms"><span class="secno">4.2</span> <span class="content">Extensions to the existing algorithms</span></a>
      </ol>
-    <li><a href="#acknowledgements"><span class="secno">5</span> <span class="content">Acknowledgements</span></a>
+    <li>
+     <a href="#privacy-and-security"><span class="secno">5</span> <span class="content">Privacy and Security</span></a>
+     <ol class="toc">
+      <li><a href="#information-leak"><span class="secno">5.1</span> <span class="content">Cross-origin information leak</span></a>
+      <li><a href="#fingerprinting"><span class="secno">5.2</span> <span class="content">Fingerprinting</span></a>
+     </ol>
+    <li><a href="#acknowledgements"><span class="secno">6</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#index"><span class="secno"></span> <span class="content">Index</span></a>
      <ol class="toc">
@@ -1960,7 +1966,7 @@ Note that there is no information leak because the main page can find and read <
      <dd data-md>
       <p>Describes the DOM element that (maybe indirectly) contains the <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-code-realms" id="ref-for-sec-code-realms③">JavaScript realms</a>.
  This property might be absent if the attribution is for the same-origin top-level realm.
- Note that cross-origin realms cannot be top-level due to <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#cross-origin-isolated" id="ref-for-cross-origin-isolated">cross-origin isolation</a>.</p>
+ Note that cross-origin realms cannot be top-level due to <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-cross-origin-isolated-capability" id="ref-for-concept-settings-object-cross-origin-isolated-capability">cross-origin isolation</a>.</p>
      <dt data-md><code>attribution . <code class="idl"><a data-link-type="idl" href="#dom-memoryattribution-scope" id="ref-for-dom-memoryattribution-scope">scope</a></code></code>
      <dd data-md>
       <p>Describes the type of the same-origin <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-code-realms" id="ref-for-sec-code-realms④">JavaScript realm</a>: <code>"Window", "DedicatedWorkerGlobalScope", "SharedWorkerGlobalScope", "ServiceWorkerGlobalScope"</code> or <code>"cross-origin-aggregated"</code> for the cross-origin case. </p>
@@ -1985,10 +1991,13 @@ Note that there is no information leak because the main page can find and read <
     <p></p>
    </dl>
    <h3 class="heading settled" data-level="2.2" id="intermediate-memory-measurement-section"><span class="secno">2.2. </span><span class="content">Intermediate memory measurement</span><a class="self-link" href="#intermediate-memory-measurement-section"></a></h3>
-   <p>This specification assumes the existences of an <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#implementation-defined" id="ref-for-implementation-defined①">implementation-defined</a> algorithm that can measure
-the memory of objects allocated by a set of <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent-clusters" id="ref-for-sec-agent-clusters">JavaScript agent clusters</a>.
-The result of such algorithm is an <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="intermediate-memory-measurement">intermediate memory measurement</dfn>,
+   <p>This specification assumes the existence of an <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#implementation-defined" id="ref-for-implementation-defined①">implementation-defined</a> algorithm that measures
+the memory usage of the given set of <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent-clusters" id="ref-for-sec-agent-clusters">agent clusters</a>.
+The result of such an algorithm is an <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="intermediate-memory-measurement">intermediate memory measurement</dfn>,
 which is a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#ordered-set" id="ref-for-ordered-set">set</a> of <a data-link-type="dfn" href="#intermediate-memory-breakdown-entry" id="ref-for-intermediate-memory-breakdown-entry">intermediate memory breakdown entries</a>.</p>
+   <p>To reduce fingerprinting risks the result must include only the memory related to the web platform objects allocated or used by the given set of agent clusters.
+This, for example, excludes the memory of user-agent-specific extensions and the baseline memory of an empty page.
+The memory must be accounted at the address space level to exclude any platform-specific memory optimizations such memory compression and lazy memory committing.</p>
    <p>An <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="intermediate-memory-breakdown-entry">intermediate memory breakdown entry</dfn> is a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#struct" id="ref-for-struct">struct</a> containing the following <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#struct-item" id="ref-for-struct-item">items</a>:</p>
    <dl>
     <dt data-md><dfn class="dfn-paneled" data-dfn-for="intermediate memory breakdown entry" data-dfn-type="dfn" data-noexport id="intermediate-memory-breakdown-entry-bytes">bytes</dfn>
@@ -2036,7 +2045,7 @@ It is a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#struct" id=
      The <dfn class="dfn-paneled idl-code" data-dfn-for="Performance" data-dfn-type="method" data-export id="dom-performance-measurememory"><code>measureMemory()</code></dfn> method steps are: 
     <ol>
      <li data-md>
-      <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert">Assert</a>: <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent" id="ref-for-sec-agent">the current Realm</a>'s <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agents" id="ref-for-sec-agents">agent</a>'s <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent-clusters" id="ref-for-sec-agent-clusters①">agent cluster</a>'s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#cross-origin-isolated" id="ref-for-cross-origin-isolated①">cross-origin isolated</a> is true.</p>
+      <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert">Assert</a>: <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent" id="ref-for-sec-agent">the current Realm</a>'s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-realm-settings-object" id="ref-for-concept-realm-settings-object">settings objects</a>'s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-cross-origin-isolated-capability" id="ref-for-concept-settings-object-cross-origin-isolated-capability①">cross-origin isolated capability</a> is true.</p>
      <li data-md>
       <p>If <a data-link-type="dfn" href="#memory-measurement-allowed-predicate" id="ref-for-memory-measurement-allowed-predicate">memory measurement allowed predicate</a> given <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent" id="ref-for-sec-agent①">the current Realm</a> is false, then:</p>
       <ol>
@@ -2066,7 +2075,7 @@ It is a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#struct" id=
       <p>If <var>global object</var> is a <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/window-object.html#window" id="ref-for-window">Window</a></code> then</p>
       <ol>
        <li data-md>
-        <p>Let <var>settings object</var> be <var>realm</var>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-realm-settings-object" id="ref-for-concept-realm-settings-object">settings object</a>.</p>
+        <p>Let <var>settings object</var> be <var>realm</var>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-realm-settings-object" id="ref-for-concept-realm-settings-object①">settings object</a>.</p>
        <li data-md>
         <p>If <var>settings object</var>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-origin" id="ref-for-concept-settings-object-origin">origin</a> is the same as <var>settings object</var>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-top-level-origin" id="ref-for-concept-environment-top-level-origin">top-level origin</a>, then return true.</p>
       </ol>
@@ -2086,11 +2095,11 @@ It is a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#struct" id=
         <p>Return the result of <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#map-getting-the-values" id="ref-for-map-getting-the-values">getting the values</a> of <var>group</var>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/browsers.html#agent-cluster-map" id="ref-for-agent-cluster-map">agent cluster map</a>.</p>
       </ol>
      <li data-md>
-      <p>Return « <var>realm</var>’s <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agents" id="ref-for-sec-agents①">agent</a>'s <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent-clusters" id="ref-for-sec-agent-clusters②">agent cluster</a> ».</p>
+      <p>Return « <var>realm</var>’s <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agents" id="ref-for-sec-agents">agent</a>'s <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent-clusters" id="ref-for-sec-agent-clusters①">agent cluster</a> ».</p>
     </ol>
    </div>
    <div class="algorithm" data-algorithm="implementation-defined memory measurement">
-     To perform <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="implementation-defined-memory-measurement">implementation-defined memory measurement</dfn> given a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#ordered-set" id="ref-for-ordered-set③">set</a> of <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent-clusters" id="ref-for-sec-agent-clusters③">agent clusters</a> <var>agent clusters</var> and
+     To perform <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="implementation-defined-memory-measurement">implementation-defined memory measurement</dfn> given a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#ordered-set" id="ref-for-ordered-set③">set</a> of <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent-clusters" id="ref-for-sec-agent-clusters②">agent clusters</a> <var>agent clusters</var> and
   a <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#idl-promise" id="ref-for-idl-promise③">Promise</a></code> <var>promise</var> run these steps <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel">in parallel</a>: 
     <ol>
      <li data-md>
@@ -2181,7 +2190,7 @@ It is a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#struct" id=
       <p>Return a new <code class="idl"><a data-link-type="idl" href="#dictdef-memoryattribution" id="ref-for-dictdef-memoryattribution②">MemoryAttribution</a></code> whose:</p>
       <ul>
        <li data-md>
-        <p><code class="idl"><a data-link-type="idl" href="#dom-memoryattribution-url" id="ref-for-dom-memoryattribution-url②">url</a></code> is <var>realm</var>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-realm-settings-object" id="ref-for-concept-realm-settings-object①">settings object</a>'s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-creation-url" id="ref-for-concept-environment-creation-url">creation URL</a>,</p>
+        <p><code class="idl"><a data-link-type="idl" href="#dom-memoryattribution-url" id="ref-for-dom-memoryattribution-url②">url</a></code> is <var>realm</var>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-realm-settings-object" id="ref-for-concept-realm-settings-object②">settings object</a>'s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-creation-url" id="ref-for-concept-environment-creation-url">creation URL</a>,</p>
        <li data-md>
         <p><code class="idl"><a data-link-type="idl" href="#dom-memoryattribution-container" id="ref-for-dom-memoryattribution-container③">container</a></code> is <var>token</var>’s <a data-link-type="dfn" href="#memory-attribution-token-container" id="ref-for-memory-attribution-token-container①">container</a> if it is not null, otherwise, the <code class="idl"><a data-link-type="idl" href="#dom-memoryattribution-container" id="ref-for-dom-memoryattribution-container④">container</a></code> entry is omitted,</p>
        <li data-md>
@@ -2213,6 +2222,12 @@ It is a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#struct" id=
         </ul>
       </ol>
      <li data-md>
+      <p>If <var>parent origin</var> is not equal to <var>top-level origin</var>, then:</p>
+      <ol>
+       <li data-md>
+        <p>Return <var>parent token</var>.</p>
+      </ol>
+     <li data-md>
       <p>Let <var>container</var> be the result of <a data-link-type="dfn" href="#extract-container-element-attributes" id="ref-for-extract-container-element-attributes">extracting container element attributes</a> given <var>container element</var>.</p>
      <li data-md>
       <p>If <var>origin</var> is equal to <var>top-level origin</var>, then:</p>
@@ -2227,19 +2242,13 @@ It is a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#struct" id=
         </ul>
       </ol>
      <li data-md>
-      <p>If <var>parent origin</var> is equal to <var>top-level origin</var>, then:</p>
-      <ol>
+      <p>Return a new <a data-link-type="dfn" href="#memory-attribution-token" id="ref-for-memory-attribution-token③">memory attribution token</a> whose:</p>
+      <ul>
        <li data-md>
-        <p>Return a new <a data-link-type="dfn" href="#memory-attribution-token" id="ref-for-memory-attribution-token③">memory attribution token</a> whose:</p>
-        <ul>
-         <li data-md>
-          <p><a data-link-type="dfn" href="#memory-attribution-token-container" id="ref-for-memory-attribution-token-container④">container</a> is <var>container</var>,</p>
-         <li data-md>
-          <p><a data-link-type="dfn" href="#memory-attribution-token-cross-origin-aggregated-flag" id="ref-for-memory-attribution-token-cross-origin-aggregated-flag③">cross-origin aggregated flag</a> is true.</p>
-        </ul>
-      </ol>
-     <li data-md>
-      <p>Return <var>parent token</var>.</p>
+        <p><a data-link-type="dfn" href="#memory-attribution-token-container" id="ref-for-memory-attribution-token-container④">container</a> is <var>container</var>,</p>
+       <li data-md>
+        <p><a data-link-type="dfn" href="#memory-attribution-token-cross-origin-aggregated-flag" id="ref-for-memory-attribution-token-cross-origin-aggregated-flag③">cross-origin aggregated flag</a> is true.</p>
+      </ul>
     </ol>
    </div>
    <div class="algorithm" data-algorithm="obtain a worker memory attribution token">
@@ -2362,7 +2371,27 @@ the <a data-link-type="dfn" href="#windoworworkerglobalscope-memory-attribution-
       <p>Set <var>window global scope</var>’s <a data-link-type="dfn" href="#windoworworkerglobalscope-memory-attribution-token" id="ref-for-windoworworkerglobalscope-memory-attribution-token⑨">memory attribution token</a> to <var>token</var>.</p>
     </ol>
    </blockquote>
-   <h2 class="heading settled" data-level="5" id="acknowledgements"><span class="secno">5. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
+   <h2 class="heading settled" data-level="5" id="privacy-and-security"><span class="secno">5. </span><span class="content">Privacy and Security</span><a class="self-link" href="#privacy-and-security"></a></h2>
+   <div nonnormative>
+    <h3 class="heading settled" data-level="5.1" id="information-leak"><span class="secno">5.1. </span><span class="content">Cross-origin information leak</span><a class="self-link" href="#information-leak"></a></h3>
+    <p>The URLs and other string values that appear in the result are guaranteed to be known to the origin that invokes the API.</p>
+    <p>The only information that is exposed cross-origin is the size information provided in <code class="idl"><a data-link-type="idl" href="#dom-memorymeasurement-bytes" id="ref-for-dom-memorymeasurement-bytes③">memoryMeasurement.bytes</a></code> and <code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-bytes" id="ref-for-dom-memorybreakdownentry-bytes②">memoryBreakdownEntry.bytes</a></code>.
+The API relies on the <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-cross-origin-isolated-capability" id="ref-for-concept-settings-object-cross-origin-isolated-capability②">cross-origin isolation</a> mechanism to mitigate cross-origin size information leaks.
+Specifically, the API relies on the invariant that all loaded resources have opted in to be embeddable and legible by their embedding origin.</p>
+    <h3 class="heading settled" data-level="5.2" id="fingerprinting"><span class="secno">5.2. </span><span class="content">Fingerprinting</span><a class="self-link" href="#fingerprinting"></a></h3>
+    <p>The result of the API depends only on the objects allocated by the web page itself and does not include unrelated memory such as the baseline memory usage of an empty web page.
+This means the same user agent binary running on two different devices should produce the same results for a fixed web page.</p>
+    <p>A web page can infer the following information about the user agent:</p>
+    <ul>
+     <li data-md>
+      <p>the bitness of the user agent (32-bit vs 64-bit).</p>
+     <li data-md>
+      <p>the version of the user agent to some extent.</p>
+    </ul>
+    <p>Similar information can be obtained from the existing APIs (<code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/system-state.html#dom-navigator-useragent" id="ref-for-dom-navigator-useragent">navigator.userAgent</a></code>, <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/system-state.html#dom-navigator-platform" id="ref-for-dom-navigator-platform">navigator.platform</a></code>).
+The bitness of the user agent can also be inferred by measuring the runtime of 32-bit and 64-bit operations.</p>
+   </div>
+   <h2 class="heading settled" data-level="6" id="acknowledgements"><span class="secno">6. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
     Thanks to Domenic Denicola and Shu-yu Guo for contributing to the API design and for reviewing this specification. 
    <p>Also thanks to Adam Giacobbe, Anne van Kesteren, Artur Janc, Boris Zbarsky, Chris Hamilton, Chris Palmer, Daniel Vogelheim, Dominik Inführ, Hannes Payer, Joe Mason, Kentaro Hara, L. David Baron, Mathias Bynens, Matthew Bolohan, Michael Lippautz, Mike West, Neil Mckay, Olga Belomestnykh, Per Parker, Philipp Weis, and Yoav Weiss for their feedback and contributions.</p>
   </main>
@@ -2560,21 +2589,14 @@ the <a data-link-type="dfn" href="#windoworworkerglobalscope-memory-attribution-
   <aside class="dfn-panel" data-for="term-for-sec-agents">
    <a href="https://tc39.es/ecma262/#sec-agents">https://tc39.es/ecma262/#sec-agents</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-sec-agents">3.2. Top-level algorithms</a> <a href="#ref-for-sec-agents①">(2)</a>
+    <li><a href="#ref-for-sec-agents">3.2. Top-level algorithms</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-sec-agent-clusters">
    <a href="https://tc39.es/ecma262/#sec-agent-clusters">https://tc39.es/ecma262/#sec-agent-clusters</a><b>Referenced in:</b>
    <ul>
     <li><a href="#ref-for-sec-agent-clusters">2.2. Intermediate memory measurement</a>
-    <li><a href="#ref-for-sec-agent-clusters①">3.2. Top-level algorithms</a> <a href="#ref-for-sec-agent-clusters②">(2)</a> <a href="#ref-for-sec-agent-clusters③">(3)</a>
-   </ul>
-  </aside>
-  <aside class="dfn-panel" data-for="term-for-sec-agent-clusters">
-   <a href="https://tc39.es/ecma262/#sec-agent-clusters">https://tc39.es/ecma262/#sec-agent-clusters</a><b>Referenced in:</b>
-   <ul>
-    <li><a href="#ref-for-sec-agent-clusters">2.2. Intermediate memory measurement</a>
-    <li><a href="#ref-for-sec-agent-clusters①">3.2. Top-level algorithms</a> <a href="#ref-for-sec-agent-clusters②">(2)</a> <a href="#ref-for-sec-agent-clusters③">(3)</a>
+    <li><a href="#ref-for-sec-agent-clusters①">3.2. Top-level algorithms</a> <a href="#ref-for-sec-agent-clusters②">(2)</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-sec-code-realms">
@@ -2665,6 +2687,14 @@ the <a data-link-type="dfn" href="#windoworworkerglobalscope-memory-attribution-
     <li><a href="#ref-for-concept-environment-creation-url">3.3. Converting an intermediate memory measurement to the result</a>
    </ul>
   </aside>
+  <aside class="dfn-panel" data-for="term-for-concept-settings-object-cross-origin-isolated-capability">
+   <a href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-cross-origin-isolated-capability">https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-cross-origin-isolated-capability</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-concept-settings-object-cross-origin-isolated-capability">2.1. Memory measurement result</a>
+    <li><a href="#ref-for-concept-settings-object-cross-origin-isolated-capability①">3.2. Top-level algorithms</a>
+    <li><a href="#ref-for-concept-settings-object-cross-origin-isolated-capability②">5.1. Cross-origin information leak</a>
+   </ul>
+  </aside>
   <aside class="dfn-panel" data-for="term-for-attr-object-data">
    <a href="https://html.spec.whatwg.org/multipage/iframe-embed-object.html#attr-object-data">https://html.spec.whatwg.org/multipage/iframe-embed-object.html#attr-object-data</a><b>Referenced in:</b>
    <ul>
@@ -2703,6 +2733,12 @@ the <a data-link-type="dfn" href="#windoworworkerglobalscope-memory-attribution-
     <li><a href="#ref-for-concept-settings-object-origin">3.2. Top-level algorithms</a>
    </ul>
   </aside>
+  <aside class="dfn-panel" data-for="term-for-dom-navigator-platform">
+   <a href="https://html.spec.whatwg.org/multipage/system-state.html#dom-navigator-platform">https://html.spec.whatwg.org/multipage/system-state.html#dom-navigator-platform</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-dom-navigator-platform">5.2. Fingerprinting</a>
+   </ul>
+  </aside>
   <aside class="dfn-panel" data-for="term-for-queue-a-global-task">
    <a href="https://html.spec.whatwg.org/multipage/webappapis.html#queue-a-global-task">https://html.spec.whatwg.org/multipage/webappapis.html#queue-a-global-task</a><b>Referenced in:</b>
    <ul>
@@ -2725,8 +2761,8 @@ the <a data-link-type="dfn" href="#windoworworkerglobalscope-memory-attribution-
   <aside class="dfn-panel" data-for="term-for-concept-realm-settings-object">
    <a href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-realm-settings-object">https://html.spec.whatwg.org/multipage/webappapis.html#concept-realm-settings-object</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-concept-realm-settings-object">3.2. Top-level algorithms</a>
-    <li><a href="#ref-for-concept-realm-settings-object①">3.3. Converting an intermediate memory measurement to the result</a>
+    <li><a href="#ref-for-concept-realm-settings-object">3.2. Top-level algorithms</a> <a href="#ref-for-concept-realm-settings-object①">(2)</a>
+    <li><a href="#ref-for-concept-realm-settings-object②">3.3. Converting an intermediate memory measurement to the result</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-attr-iframe-src">
@@ -2739,6 +2775,12 @@ the <a data-link-type="dfn" href="#windoworworkerglobalscope-memory-attribution-
    <a href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-top-level-origin">https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-top-level-origin</a><b>Referenced in:</b>
    <ul>
     <li><a href="#ref-for-concept-environment-top-level-origin">3.2. Top-level algorithms</a>
+   </ul>
+  </aside>
+  <aside class="dfn-panel" data-for="term-for-dom-navigator-useragent">
+   <a href="https://html.spec.whatwg.org/multipage/system-state.html#dom-navigator-useragent">https://html.spec.whatwg.org/multipage/system-state.html#dom-navigator-useragent</a><b>Referenced in:</b>
+   <ul>
+    <li><a href="#ref-for-dom-navigator-useragent">5.2. Fingerprinting</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-list-append">
@@ -2894,7 +2936,6 @@ the <a data-link-type="dfn" href="#windoworworkerglobalscope-memory-attribution-
     <ul>
      <li><span class="dfn-paneled" id="term-for-sec-agents" style="color:initial">agent</span>
      <li><span class="dfn-paneled" id="term-for-sec-agent-clusters" style="color:initial">agent cluster <small>(for agent)</small></span>
-     <li><span class="dfn-paneled" id="term-for-sec-agent-clusters①" style="color:initial">javascript agent clusters</span>
      <li><span class="dfn-paneled" id="term-for-sec-code-realms" style="color:initial">javascript realm</span>
      <li><span class="dfn-paneled" id="term-for-sec-code-realms①" style="color:initial">javascript realms</span>
      <li><span class="dfn-paneled" id="term-for-sec-agent" style="color:initial">the current realm</span>
@@ -2916,18 +2957,21 @@ the <a data-link-type="dfn" href="#windoworworkerglobalscope-memory-attribution-
      <li><span class="dfn-paneled" id="term-for-window-bc" style="color:initial">browsing context</span>
      <li><span class="dfn-paneled" id="term-for-browsing-context-group" style="color:initial">browsing context group</span>
      <li><span class="dfn-paneled" id="term-for-concept-environment-creation-url" style="color:initial">creation url</span>
+     <li><span class="dfn-paneled" id="term-for-concept-settings-object-cross-origin-isolated-capability" style="color:initial">cross-origin isolated capability</span>
      <li><span class="dfn-paneled" id="term-for-attr-object-data" style="color:initial">data</span>
      <li><span class="dfn-paneled" id="term-for-environment-settings-object" style="color:initial">environment settings object</span>
      <li><span class="dfn-paneled" id="term-for-concept-settings-object-global" style="color:initial">global object <small>(for environment settings object)</small></span>
      <li><span class="dfn-paneled" id="term-for-in-parallel" style="color:initial">in parallel</span>
      <li><span class="dfn-paneled" id="term-for-the-object-element" style="color:initial">object</span>
      <li><span class="dfn-paneled" id="term-for-concept-settings-object-origin" style="color:initial">origin <small>(for environment settings object)</small></span>
+     <li><span class="dfn-paneled" id="term-for-dom-navigator-platform" style="color:initial">platform</span>
      <li><span class="dfn-paneled" id="term-for-queue-a-global-task" style="color:initial">queue a global task</span>
      <li><span class="dfn-paneled" id="term-for-concept-relevant-global" style="color:initial">relevant global object</span>
      <li><span class="dfn-paneled" id="term-for-relevant-settings-object" style="color:initial">relevant settings object</span>
      <li><span class="dfn-paneled" id="term-for-concept-realm-settings-object" style="color:initial">settings object</span>
      <li><span class="dfn-paneled" id="term-for-attr-iframe-src" style="color:initial">src</span>
      <li><span class="dfn-paneled" id="term-for-concept-environment-top-level-origin" style="color:initial">top-level origin</span>
+     <li><span class="dfn-paneled" id="term-for-dom-navigator-useragent" style="color:initial">userAgent</span>
     </ul>
    <li>
     <a data-link-type="biblio">[INFRA]</a> defines the following terms:
@@ -3024,6 +3068,7 @@ the <a data-link-type="dfn" href="#windoworworkerglobalscope-memory-attribution-
    <ul>
     <li><a href="#ref-for-dom-memorymeasurement-bytes">2.1. Memory measurement result</a> <a href="#ref-for-dom-memorymeasurement-bytes①">(2)</a>
     <li><a href="#ref-for-dom-memorymeasurement-bytes②">3.3. Converting an intermediate memory measurement to the result</a>
+    <li><a href="#ref-for-dom-memorymeasurement-bytes③">5.1. Cross-origin information leak</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="dom-memorymeasurement-breakdown">
@@ -3045,6 +3090,7 @@ the <a data-link-type="dfn" href="#windoworworkerglobalscope-memory-attribution-
    <ul>
     <li><a href="#ref-for-dom-memorybreakdownentry-bytes">2.1. Memory measurement result</a>
     <li><a href="#ref-for-dom-memorybreakdownentry-bytes①">3.3. Converting an intermediate memory measurement to the result</a>
+    <li><a href="#ref-for-dom-memorybreakdownentry-bytes②">5.1. Cross-origin information leak</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="dom-memorybreakdownentry-attribution">
