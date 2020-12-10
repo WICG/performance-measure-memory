@@ -136,10 +136,17 @@ For a simple page without iframes and workers the result might look as follows:
       ],
       userAgentSpecificTypes: ["JS", "DOM"],
     },
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
+    },
   ],
 }
 ```
 Here all memory is attributed to the main page.
+The entry with `bytes: 0` is present in the breakdown list to encorange processing of the result in generic way without hardcoding specific entries.
+Such an entry is inserted at a random position if the list is not empty.
 
 Other possible valid results:
 ```javascript
@@ -154,6 +161,11 @@ Here the implementation provides only the total memory usage.
 {
   bytes: 1000000,
   breakdown: [
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
+    },
     {
       bytes: 1000000,
       attribution: [
@@ -196,7 +208,12 @@ to that iframe and provide diagnostic information for identifying the iframe:
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      userAgentSpecificTypes: ["DOM", "JS"],
+    },
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
     },
     {
       bytes: 500000,
@@ -244,6 +261,11 @@ An implementation is allowed to lump together some or all of iframe and page mem
       ],
       userAgentSpecificTypes: ["JS", "DOM"],
     },
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
+    },
   ],
 };
 ```
@@ -255,6 +277,11 @@ For a page that spawns a web worker the result includes the URL of the worker.
 {
   bytes: 1800000,
   breakdown: [
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
+    },
     {
       bytes: 1000000,
       attribution: [
@@ -304,6 +331,11 @@ The result could be something like:
         },
       ],
       userAgentSpecificTypes: ["JS"],
+    },
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
     },
   ],
 }
@@ -357,6 +389,11 @@ All memory of these resources is attributed to the first iframe.
       userAgentSpecificTypes: ["JS", "DOM"],
     },
     {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
+    },
+    {
       bytes: 1400000,
       attribution: [
         {
@@ -368,7 +405,7 @@ All memory of these resources is attributed to the first iframe.
           scope: "cross-origin-aggregated",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      userAgentSpecificTypes: ["DOM", "JS"],
     },
   ],
 }
@@ -410,7 +447,12 @@ example.com (1000000 bytes)
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      userAgentSpecificTypes: ["DOM", "JS"],
+    },
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
     },
     {
       bytes: 500000,
@@ -424,7 +466,7 @@ example.com (1000000 bytes)
           scope: "cross-origin-aggregated",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      userAgentSpecificTypes: ["DOM", "JS"],
     },
     {
       bytes: 200000,
@@ -526,7 +568,7 @@ Intermediate memory measurement {#intermediate-memory-measurement-section}
 This specification assumes the existence of an [=implementation-defined=] algorithm that measures
 the memory usage of the given set of [=agent clusters=].
 The result of such an algorithm is an <dfn>intermediate memory measurement</dfn>,
-which is a [=set=] of [=intermediate memory breakdown entries=].
+which is a [=list=] of [=intermediate memory breakdown entries=].
 
 To reduce fingerprinting risks the result must include only the memory related to the web platform objects allocated or used by the given set of agent clusters.
 This, for example, excludes the memory of user-agent-specific extensions and the baseline memory of an empty page.
@@ -541,6 +583,11 @@ An <dfn>intermediate memory breakdown entry</dfn> is a [=struct=] containing the
 
 :  <dfn for="intermediate memory breakdown entry">user agent specific types</dfn>
 :: A [=set=] of [=/strings=] specifying [=implementation-defined=] memory types associated with the memory.
+
+To improve web compatibility the implementation must
+- randomize the order of the breakdown entries.
+- randomize the order of entries in [=intermediate memory breakdown entry/user agent specific types=].
+- insert an entry with [=intermediate memory breakdown entry/bytes=]=0, empty [=intermediate memory breakdown entry/realms=], and empty [=intermediate memory breakdown entry/user agent specific types=] at a random position in the breakdown list.
 
 Algorithms defined in this specification show how to convert an [=intermediate memory measurement=]
 to an instance of {{MemoryMeasurement}}.
