@@ -1224,7 +1224,7 @@ Possible extra rowspan handling
   <link href="https://www.w3.org/StyleSheets/TR/2016/cg-draft" rel="stylesheet">
   <meta content="Bikeshed version 40de15f9, updated Thu Jun 11 17:47:04 2020 -0700" name="generator">
   <link href="https://wicg.github.io/performance-measure-memory/" rel="canonical">
-  <meta content="18baab56a2ca7c229b369bf19e6d21f853c3935f" name="document-revision">
+  <meta content="052b68dcd5955d6f3914dbb1b9dafc9bddff0066" name="document-revision">
 <style>
 /* domintro from https://resources.whatwg.org/standard.css */
 .domintro {
@@ -1513,7 +1513,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">Measure Memory API</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Community Group Report, <time class="dt-updated" datetime="2020-12-10">10 December 2020</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Community Group Report, <time class="dt-updated" datetime="2020-12-11">11 December 2020</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -1637,10 +1637,17 @@ run<c- p>();</c->
       <c- p>],</c->
       userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
     <c- p>},</c->
+    <c- p>{</c->
+      bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
+      attribution<c- o>:</c-> <c- p>[],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
+    <c- p>},</c->
   <c- p>],</c->
 <c- p>}</c->
 </pre>
-    Here all memory is attributed to the main page. 
+    Here all memory is attributed to the main page.
+The entry with <code>bytes: 0</code> is present in the breakdown list to encourage processing of the result in a generic way without hardcoding specific entries.
+Such an entry is inserted at a random position if the list is not empty. 
     <p>Other possible valid results:</p>
 <pre class="language-javascript highlight"><c- p>{</c->
   bytes<c- o>:</c-> <c- mi>1000000</c-><c- p>,</c->
@@ -1651,6 +1658,11 @@ run<c- p>();</c->
 <pre class="language-javascript highlight"><c- p>{</c->
   bytes<c- o>:</c-> <c- mi>1000000</c-><c- p>,</c->
   breakdown<c- o>:</c-> <c- p>[</c->
+    <c- p>{</c->
+      bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
+      attribution<c- o>:</c-> <c- p>[],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
+    <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>1000000</c-><c- p>,</c->
       attribution<c- o>:</c-> <c- p>[</c->
@@ -1687,7 +1699,12 @@ to that iframe and provide diagnostic information for identifying the iframe:</p
           scope<c- o>:</c-> <c- u>"Window"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"DOM"</c-><c- p>,</c-> <c- u>"JS"</c-><c- p>],</c->
+    <c- p>},</c->
+    <c- p>{</c->
+      bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
+      attribution<c- o>:</c-> <c- p>[],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>500000</c-><c- p>,</c->
@@ -1733,6 +1750,11 @@ An implementation is allowed to lump together some or all of iframe and page mem
       <c- p>],</c->
       userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
     <c- p>},</c->
+    <c- p>{</c->
+      bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
+      attribution<c- o>:</c-> <c- p>[],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
+    <c- p>},</c->
   <c- p>],</c->
 <c- p>};</c->
 </pre>
@@ -1742,6 +1764,11 @@ An implementation is allowed to lump together some or all of iframe and page mem
 <pre class="language-javascript highlight"><c- p>{</c->
   bytes<c- o>:</c-> <c- mi>1800000</c-><c- p>,</c->
   breakdown<c- o>:</c-> <c- p>[</c->
+    <c- p>{</c->
+      bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
+      attribution<c- o>:</c-> <c- p>[],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
+    <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>1000000</c-><c- p>,</c->
       attribution<c- o>:</c-> <c- p>[</c->
@@ -1785,6 +1812,11 @@ The result could be something like:
         <c- p>},</c->
       <c- p>],</c->
       userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>],</c->
+    <c- p>},</c->
+    <c- p>{</c->
+      bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
+      attribution<c- o>:</c-> <c- p>[],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
     <c- p>},</c->
   <c- p>],</c->
 <c- p>}</c->
@@ -1830,6 +1862,11 @@ All memory of these resources is attributed to the first iframe.
       userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
     <c- p>},</c->
     <c- p>{</c->
+      bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
+      attribution<c- o>:</c-> <c- p>[],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
+    <c- p>},</c->
+    <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>1400000</c-><c- p>,</c->
       attribution<c- o>:</c-> <c- p>[</c->
         <c- p>{</c->
@@ -1841,7 +1878,7 @@ All memory of these resources is attributed to the first iframe.
           scope<c- o>:</c-> <c- u>"cross-origin-aggregated"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"DOM"</c-><c- p>,</c-> <c- u>"JS"</c-><c- p>],</c->
     <c- p>},</c->
   <c- p>],</c->
 <c- p>}</c->
@@ -1876,7 +1913,12 @@ Note that there is no information leak because the main page can find and read <
           scope<c- o>:</c-> <c- u>"Window"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"DOM"</c-><c- p>,</c-> <c- u>"JS"</c-><c- p>],</c->
+    <c- p>},</c->
+    <c- p>{</c->
+      bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
+      attribution<c- o>:</c-> <c- p>[],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>500000</c-><c- p>,</c->
@@ -1890,7 +1932,7 @@ Note that there is no information leak because the main page can find and read <
           scope<c- o>:</c-> <c- u>"cross-origin-aggregated"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"DOM"</c-><c- p>,</c-> <c- u>"JS"</c-><c- p>],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>200000</c-><c- p>,</c->
@@ -2123,13 +2165,25 @@ It is a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#struct" id=
      <li data-md>
       <p>Let <var>breakdown</var> be a new <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#list" id="ref-for-list">list</a>.</p>
      <li data-md>
+      <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#list-append" id="ref-for-list-append">Append</a> to <var>breakdown</var> a new <code class="idl"><a data-link-type="idl" href="#dictdef-memorybreakdownentry" id="ref-for-dictdef-memorybreakdownentry①">MemoryBreakdownEntry</a></code> whose:</p>
+      <ul>
+       <li data-md>
+        <p><code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-bytes" id="ref-for-dom-memorybreakdownentry-bytes①">bytes</a></code> is 0,</p>
+       <li data-md>
+        <p><code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-attribution" id="ref-for-dom-memorybreakdownentry-attribution①">attribution</a></code> is « »,</p>
+       <li data-md>
+        <p><code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-useragentspecifictypes" id="ref-for-dom-memorybreakdownentry-useragentspecifictypes①">userAgentSpecificTypes</a></code> is « ».</p>
+      </ul>
+     <li data-md>
       <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#list-iterate" id="ref-for-list-iterate①">For each</a> <a data-link-type="dfn" href="#intermediate-memory-breakdown-entry" id="ref-for-intermediate-memory-breakdown-entry③">intermediate memory breakdown entry</a> <var>intermediate entry</var> in <var>intermediate measurement</var>:</p>
       <ol>
        <li data-md>
         <p>Let <var>breakdown entry</var> be the result of <a data-link-type="dfn" href="#creating-a-new-memory-breakdown-entry" id="ref-for-creating-a-new-memory-breakdown-entry">creating a new memory breakdown entry</a> given <var>intermediate entry</var>.</p>
        <li data-md>
-        <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#list-append" id="ref-for-list-append">Append</a> <var>breakdown entry</var> to <var>breakdown</var>.</p>
+        <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#list-append" id="ref-for-list-append①">Append</a> <var>breakdown entry</var> to <var>breakdown</var>.</p>
       </ol>
+     <li data-md>
+      <p>Randomize the order of the items in <var>breakdown</var>.</p>
      <li data-md>
       <p>Return a new <code class="idl"><a data-link-type="idl" href="#dictdef-memorymeasurement" id="ref-for-dictdef-memorymeasurement③">MemoryMeasurement</a></code> whose:</p>
       <ul>
@@ -2151,17 +2205,21 @@ It is a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#struct" id=
        <li data-md>
         <p>Let <var>attribution entry</var> be the result of <a data-link-type="dfn" href="#creating-a-new-memory-attribution" id="ref-for-creating-a-new-memory-attribution">creating a new memory attribution</a> given <var>realm</var>.</p>
        <li data-md>
-        <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#list-append" id="ref-for-list-append①">Append</a> <var>attribution entry</var> to <var>attribution</var>.</p>
+        <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#list-append" id="ref-for-list-append②">Append</a> <var>attribution entry</var> to <var>attribution</var>.</p>
       </ol>
      <li data-md>
-      <p>Return a new <code class="idl"><a data-link-type="idl" href="#dictdef-memorybreakdownentry" id="ref-for-dictdef-memorybreakdownentry①">MemoryBreakdownEntry</a></code> whose:</p>
+      <p>Let <var>types</var> be <var>intermediate entry</var>’s <a data-link-type="dfn" href="#intermediate-memory-breakdown-entry-user-agent-specific-types" id="ref-for-intermediate-memory-breakdown-entry-user-agent-specific-types">user agent specific types</a>.</p>
+     <li data-md>
+      <p>Randomize the order of the items in <var>types</var>.</p>
+     <li data-md>
+      <p>Return a new <code class="idl"><a data-link-type="idl" href="#dictdef-memorybreakdownentry" id="ref-for-dictdef-memorybreakdownentry②">MemoryBreakdownEntry</a></code> whose:</p>
       <ul>
        <li data-md>
-        <p><code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-bytes" id="ref-for-dom-memorybreakdownentry-bytes①">bytes</a></code> is <var>intermediate entry</var>’s <a data-link-type="dfn" href="#intermediate-memory-breakdown-entry-bytes" id="ref-for-intermediate-memory-breakdown-entry-bytes①">bytes</a>,</p>
+        <p><code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-bytes" id="ref-for-dom-memorybreakdownentry-bytes②">bytes</a></code> is <var>intermediate entry</var>’s <a data-link-type="dfn" href="#intermediate-memory-breakdown-entry-bytes" id="ref-for-intermediate-memory-breakdown-entry-bytes①">bytes</a>,</p>
        <li data-md>
-        <p><code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-attribution" id="ref-for-dom-memorybreakdownentry-attribution①">attribution</a></code> is <var>attribution</var>,</p>
+        <p><code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-attribution" id="ref-for-dom-memorybreakdownentry-attribution②">attribution</a></code> is <var>attribution</var>,</p>
        <li data-md>
-        <p><code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-useragentspecifictypes" id="ref-for-dom-memorybreakdownentry-useragentspecifictypes①">userAgentSpecificTypes</a></code> is <var>intermediate entry</var>’s <a data-link-type="dfn" href="#intermediate-memory-breakdown-entry-user-agent-specific-types" id="ref-for-intermediate-memory-breakdown-entry-user-agent-specific-types">user agent specific types</a>.</p>
+        <p><code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-useragentspecifictypes" id="ref-for-dom-memorybreakdownentry-useragentspecifictypes②">userAgentSpecificTypes</a></code> is <var>types</var>.</p>
       </ul>
     </ol>
    </div>
@@ -2375,7 +2433,7 @@ the <a data-link-type="dfn" href="#windoworworkerglobalscope-memory-attribution-
    <div nonnormative>
     <h3 class="heading settled" data-level="5.1" id="information-leak"><span class="secno">5.1. </span><span class="content">Cross-origin information leak</span><a class="self-link" href="#information-leak"></a></h3>
     <p>The URLs and other string values that appear in the result are guaranteed to be known to the origin that invokes the API.</p>
-    <p>The only information that is exposed cross-origin is the size information provided in <code class="idl"><a data-link-type="idl" href="#dom-memorymeasurement-bytes" id="ref-for-dom-memorymeasurement-bytes③">memoryMeasurement.bytes</a></code> and <code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-bytes" id="ref-for-dom-memorybreakdownentry-bytes②">memoryBreakdownEntry.bytes</a></code>.
+    <p>The only information that is exposed cross-origin is the size information provided in <code class="idl"><a data-link-type="idl" href="#dom-memorymeasurement-bytes" id="ref-for-dom-memorymeasurement-bytes③">memoryMeasurement.bytes</a></code> and <code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-bytes" id="ref-for-dom-memorybreakdownentry-bytes③">memoryBreakdownEntry.bytes</a></code>.
 The API relies on the <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-cross-origin-isolated-capability" id="ref-for-concept-settings-object-cross-origin-isolated-capability②">cross-origin isolation</a> mechanism to mitigate cross-origin size information leaks.
 Specifically, the API relies on the invariant that all loaded resources have opted in to be embeddable and legible by their embedding origin.</p>
     <h3 class="heading settled" data-level="5.2" id="fingerprinting"><span class="secno">5.2. </span><span class="content">Fingerprinting</span><a class="self-link" href="#fingerprinting"></a></h3>
@@ -2786,7 +2844,7 @@ The bitness of the user agent can also be inferred by measuring the runtime of 3
   <aside class="dfn-panel" data-for="term-for-list-append">
    <a href="https://infra.spec.whatwg.org/#list-append">https://infra.spec.whatwg.org/#list-append</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-list-append">3.3. Converting an intermediate memory measurement to the result</a> <a href="#ref-for-list-append①">(2)</a>
+    <li><a href="#ref-for-list-append">3.3. Converting an intermediate memory measurement to the result</a> <a href="#ref-for-list-append①">(2)</a> <a href="#ref-for-list-append②">(3)</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-assert">
@@ -3082,29 +3140,29 @@ The bitness of the user agent can also be inferred by measuring the runtime of 3
    <b><a href="#dictdef-memorybreakdownentry">#dictdef-memorybreakdownentry</a></b><b>Referenced in:</b>
    <ul>
     <li><a href="#ref-for-dictdef-memorybreakdownentry">2.1. Memory measurement result</a>
-    <li><a href="#ref-for-dictdef-memorybreakdownentry①">3.3. Converting an intermediate memory measurement to the result</a>
+    <li><a href="#ref-for-dictdef-memorybreakdownentry①">3.3. Converting an intermediate memory measurement to the result</a> <a href="#ref-for-dictdef-memorybreakdownentry②">(2)</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="dom-memorybreakdownentry-bytes">
    <b><a href="#dom-memorybreakdownentry-bytes">#dom-memorybreakdownentry-bytes</a></b><b>Referenced in:</b>
    <ul>
     <li><a href="#ref-for-dom-memorybreakdownentry-bytes">2.1. Memory measurement result</a>
-    <li><a href="#ref-for-dom-memorybreakdownentry-bytes①">3.3. Converting an intermediate memory measurement to the result</a>
-    <li><a href="#ref-for-dom-memorybreakdownentry-bytes②">5.1. Cross-origin information leak</a>
+    <li><a href="#ref-for-dom-memorybreakdownentry-bytes①">3.3. Converting an intermediate memory measurement to the result</a> <a href="#ref-for-dom-memorybreakdownentry-bytes②">(2)</a>
+    <li><a href="#ref-for-dom-memorybreakdownentry-bytes③">5.1. Cross-origin information leak</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="dom-memorybreakdownentry-attribution">
    <b><a href="#dom-memorybreakdownentry-attribution">#dom-memorybreakdownentry-attribution</a></b><b>Referenced in:</b>
    <ul>
     <li><a href="#ref-for-dom-memorybreakdownentry-attribution">2.1. Memory measurement result</a>
-    <li><a href="#ref-for-dom-memorybreakdownentry-attribution①">3.3. Converting an intermediate memory measurement to the result</a>
+    <li><a href="#ref-for-dom-memorybreakdownentry-attribution①">3.3. Converting an intermediate memory measurement to the result</a> <a href="#ref-for-dom-memorybreakdownentry-attribution②">(2)</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="dom-memorybreakdownentry-useragentspecifictypes">
    <b><a href="#dom-memorybreakdownentry-useragentspecifictypes">#dom-memorybreakdownentry-useragentspecifictypes</a></b><b>Referenced in:</b>
    <ul>
     <li><a href="#ref-for-dom-memorybreakdownentry-useragentspecifictypes">2.1. Memory measurement result</a>
-    <li><a href="#ref-for-dom-memorybreakdownentry-useragentspecifictypes①">3.3. Converting an intermediate memory measurement to the result</a>
+    <li><a href="#ref-for-dom-memorybreakdownentry-useragentspecifictypes①">3.3. Converting an intermediate memory measurement to the result</a> <a href="#ref-for-dom-memorybreakdownentry-useragentspecifictypes②">(2)</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="dictdef-memoryattribution">
