@@ -40,7 +40,7 @@ run();
           scope: "Window",
         }
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      userAgentSpecificTypes: ["DOM", "JS"],
     },
     {
       bytes: 800000,
@@ -51,6 +51,11 @@ run();
         },
       ],
       userAgentSpecificTypes: ["JS"],
+    },
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
     },
   ],
 }
@@ -131,10 +136,17 @@ For a simple page without iframes and workers the result might look as follows:
       ],
       userAgentSpecificTypes: ["JS", "DOM"],
     },
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
+    },
   ],
 }
 ```
 *Note: the format of the result has changed recently and the origin trail running in Chrome 82-87 uses the old format. See [Origin Trial](ORIGIN_TRIAL.md) for details.*
+The entry with `bytes: 0` is present in the breakdown list to encourage processing of the result in a generic way without hardcoding specific entries.
+Such an entry is inserted at a random position if the list is not empty.
 
 Providing only the total memory usage is also a valid implementation:
 ```JavaScript
@@ -178,6 +190,11 @@ For a page that embeds a same-origin iframe the result might attribute some memo
   bytes: 1500000,
   breakdown: [
     {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
+    },
+    {
       bytes: 1000000,
       attribution: [
         {
@@ -199,7 +216,7 @@ For a page that embeds a same-origin iframe the result might attribute some memo
           scope: "Window",
         }
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      userAgentSpecificTypes: ["DOM", "JS"],
     },
   ],
 }
@@ -213,6 +230,11 @@ It is not always possible to separate iframe memory from page memory in a meanin
 {
   bytes: 1500000,
   breakdown: [
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
+    },
     {
       bytes: 1500000,
       attribution: [
@@ -249,7 +271,12 @@ For a page that spawns a web worker the result includes the URL of the worker.
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      userAgentSpecificTypes: ["DOM", "JS"],
+    },
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
     },
     {
       bytes: 800000,
@@ -283,6 +310,11 @@ To get the memory usage of a shared/service worker, the performance.measureMemor
         },
       ],
       userAgentSpecificTypes: ["JS"],
+    },
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
     },
   ],
 }
@@ -320,6 +352,11 @@ A cross-origin iframe embeds to other iframes and spawns a worker. All memory of
   bytes: 2400000,
   breakdown: [
     {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
+    },
+    {
       bytes: 1000000,
       attribution: [
         {
@@ -327,7 +364,7 @@ A cross-origin iframe embeds to other iframes and spawns a worker. All memory of
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      userAgentSpecificTypes: ["DOM", "JS"],
     },
     {
       bytes: 1400000,
@@ -385,6 +422,11 @@ example.com (1000000 bytes)
       userAgentSpecificTypes: ["JS", "DOM"],
     },
     {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
+    },
+    {
       bytes: 500000,
       attribution: [
         {
@@ -396,7 +438,7 @@ example.com (1000000 bytes)
           scope: "cross-origin-aggregated",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      userAgentSpecificTypes: ["DOM", "JS"],
     },
     {
       bytes: 200000,
@@ -426,6 +468,7 @@ Our preference however is to communicate the message in documentation and keep t
 ### Scope
 The API is available for windows, shared workers, and service workers.
 When invoked in a window context, the API estimates memory usage of all [JS agent clusters](https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism) of the [browsing context group](https://html.spec.whatwg.org/multipage/browsers.html#browsing-context-group) of the window.
+(The scope will be restricted to the current address space for security. See Issues #5 and #20.)
 Note that the result accounts for all iframes and nested dedicated workers.
 In the shared/service worker case, the API estimates memory usage of the worker's JS agent cluster that includes all nested dedicated workers.
 
@@ -436,38 +479,23 @@ Since the top-level context (a window or a shared/service worker) already measur
 The second reason is to simplify implementation of the API by ensuring that at most one thread in a JS agent cluster can request memory measurement for the cluster.
 
 ## Security Considerations
-### Cross-origin information leak
-Only [cross-origin isolated](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/crossOriginIsolated) web pages that opt in using [the COOP+COEP headers](https://docs.google.com/document/d/1zDlfvfTJ_9e8Jdc8ehuV4zMEu9ySMCiTGMS9y0GU92k/edit) can use the API.
-This prevents cross-origin information leaks because all iframes and resources have to explicitly opt in using CORP/CORS.
-Additionally it is guaranteed that a cross-origin isolated web page is not collocated with other web pages in the same address space.
+### Cross-origin information leaks
+The URLs and other string values that appear in the result are guaranteed to be known to the origin that invokes the API.
 
-All URLs reported in the `breakdown` part of the result are known to the web page, so there is no information leak.
-
-An attempt to invoke the API when
-`crossOriginIsolated === false` leads to promise rejection with a `SecurityError` DOM exception.
-```JavaScript
-try {
-  const result = await performance.measureMemory();
-} catch (error) {
-  console.assert(!crossOriginIsolated);
-  console.assert(error instanceof DOMException);
-  console.assert(error.name === 'SecurityError');
-  console.assert(error.message === 'crossOriginIsolated is required');
-}
-```
-
-Invoking the API in an iframe that is cross-origin from the main window also throws a `SecurityError` DOM exception even if `crossOriginIsolated === true`.
-This ensures that cross-origin iframes cannot measure memory of the main window.
+The only information that is exposed cross-origin is the size information provided in the `bytes` fields.
+The API relies on the [cross-origin isolation](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/crossOriginIsolated) mechanism to mitigate cross-origin size information leaks.
+Specifically, the API relies on the invariant that all loaded resources have opted in to be embeddable and legible by their embedding origin.
 
 ### Fingerprinting
-Implementations need to be careful to avoid leaking information about the underlying browser instance.
-Ideally the API returns `0` (or some other constant) for empty web pages such that the result depends only on the objects allocated by the web page.
+The result of the API depends only on the objects allocated by the web page itself and does not include unrelated memory such as the baseline memory usage of an empty web page.
+This means the same user agent binary running on two different devices should produce the same results for a fixed web page.
 
-Some information leak is unavoidable though. The web page can deduce:
-- the bitness of the system (32-bit vs 64-bit).
-- the version of the browser to some extent.
+A web page can infer the following information about the user agent:
+- the bitness of the user agent (32-bit vs 64-bit).
+- the version of the user agent to some extent.
 
-Note that such information can be obtained from the existing APIs (`navigator.userAgent`, `navigator.deviceMemory`).
+Similar information can be obtained from the existing APIs (`navigator.userAgent`, `navigator.platform`).
+The bitness of the user agent can also be inferred by measuring the runtime of 32-bit and 64-bit operations.
 
 ## Performance Considerations
 The API with coarse-grained breakdown can be implemented efficiently provided that the browser does not collocate a cross-origin web page with other web pages in the same process.
