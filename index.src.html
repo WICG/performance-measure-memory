@@ -412,6 +412,49 @@ All memory of these resources is attributed to the first iframe.
 ```
 Note that the `url` and `scope` fields of the cross-origin iframe entry have
 special values indicating that information is not available.
+
+If the implementation loads cross-origin iframes in a different address space,
+then their memory usage is not measured.
+The breakdown entries of such iframes have `bytes: 0` indicating that these
+iframes are not accounted for:
+
+```javascript
+{
+  bytes: 100000,
+  breakdown: [
+    {
+      bytes: 1000000,
+      attribution: [
+        {
+          url: "https://example.com",
+          scope: "Window",
+        },
+      ],
+      userAgentSpecificTypes: ["JS", "DOM"],
+    },
+    {
+      bytes: 0,
+      attribution: [
+        {
+          url: "cross-origin-url",
+          container: {
+            id: "example-id",
+            src: "https://foo.com/iframe1",
+          },
+          scope: "cross-origin-aggregated",
+        },
+      ],
+      userAgentSpecificTypes: ["JS", "DOM"],
+    },
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
+    },
+  ],
+}
+```
+
 </div>
 
 <div class="example" id="example-same-and-cross-origin-iframes">
@@ -481,6 +524,59 @@ example.com (1000000 bytes)
         },
       ],
       userAgentSpecificTypes: ["JS", "DOM"],
+    },
+  ],
+}
+```
+
+If the implementation omits memory measurement of cross-origin iframes,
+then the result could look like:
+```javascript
+{
+  bytes: 1200000,
+  breakdown: [
+    {
+      bytes: 1000000,
+      attribution: [
+        {
+          url: "https://example.com",
+          scope: "Window",
+        },
+      ],
+      userAgentSpecificTypes: ["JS", "DOM"],
+    },
+    {
+      bytes: 0,
+      attribution: [
+        {
+          url: "cross-origin-url",
+          container: {
+            id: "example-id",
+            src: "https://foo.com/iframe1",
+          },
+          scope: "cross-origin-aggregated",
+        },
+      ],
+      userAgentSpecificTypes: ["JS", "DOM"],
+    },
+    {
+      bytes: 200000,
+      attribution: [
+        {
+          url: "https://example.com/iframe2",
+          container: {
+            id: "example-id",
+            src: "https://foo.com/iframe1",
+          },
+          scope: "Window",
+        },
+      ],
+      userAgentSpecificTypes: ["JS", "DOM"],
+    },
+    {
+      bytes: 0,
+      attribution: [],
+      userAgentSpecificTypes: [],
     },
   ],
 }
@@ -566,9 +662,11 @@ Intermediate memory measurement {#intermediate-memory-measurement-section}
 --------------------------------------------------------------------------
 
 This specification assumes the existence of an [=implementation-defined=] algorithm that measures
-the memory usage of the given set of [=agent clusters=].
+the memory usage of the given set of [=agent clusters=] in the address space of the given current [=agent cluster=].
 The result of such an algorithm is an <dfn>intermediate memory measurement</dfn>,
 which is a [=set=] of [=intermediate memory breakdown entries=].
+
+To preserve security guarantees of address space isolation, any intermediate memory breakdown entries that represent memory outside the current address space must have their bytes set to 0.
 
 To reduce fingerprinting risks the result must include only the memory related to the web platform objects allocated or used by the given set of agent clusters.
 This, for example, excludes the memory of user-agent-specific extensions and the baseline memory of an empty page.
@@ -576,7 +674,7 @@ The memory must be accounted at the address space level to exclude any platform-
 
 An <dfn>intermediate memory breakdown entry</dfn> is a [=struct=] containing the following [=struct/items=]:
 :  <dfn for="intermediate memory breakdown entry">bytes</dfn>
-:: The size of the memory that this [=intermediate memory breakdown entry=] describes.
+:: The size of the memory that this [=intermediate memory breakdown entry=] describes, or 0 if this entry represents memory outside the current address space.
 
 :  <dfn for="intermediate memory breakdown entry">realms</dfn>
 :: A [=set=] of [=JavaScript realms=] to which the memory is attributed to.
@@ -628,9 +726,10 @@ Top-level algorithms {#top-level-algorithms}
   1. [=Assert=]: [=the current Realm=]'s [=Realm/settings objects=]'s [=environment settings object/cross-origin isolated capability=] is true.
   1. If [=memory measurement allowed predicate=] given [=the current Realm=] is false, then:
       1. Return [=a promise rejected with=] a "{{SecurityError}}" {{DOMException}}.
+  1. Let |the current agent cluster| be [=the current Realm=]'s [=Realm/agent=]'s [=agent/agent cluster=].
   1. Let |agent clusters| be the result of [=getting all agent clusters=] given [=the current Realm=].
   1. Let |promise| be a new {{Promise}}.
-  1. Start asynchronous [=implementation-defined memory measurement=] given |agent clusters| and |promise|.
+  1. Start asynchronous [=implementation-defined memory measurement=] given |the current agent cluster|, |agent clusters|, and |promise|.
   1. Return |promise|.
 </div>
 
@@ -656,9 +755,9 @@ Top-level algorithms {#top-level-algorithms}
 </div>
 
 <div algorithm>
-  To perform <dfn>implementation-defined memory measurement</dfn> given a [=set=] of [=agent clusters=] |agent clusters| and
+  To perform <dfn>implementation-defined memory measurement</dfn> given given an [=agent cluster=] |the current agent cluster|, a [=set=] of [=agent clusters=] |agent clusters|, and
   a {{Promise}} |promise| run these steps [=in parallel=]:
-  1. Let |intermediate memory measurement| be an [=implementation-defined=] [=intermediate memory measurement=] of |agent clusters|.
+  1. Let |intermediate memory measurement| be [=implementation-defined=] [=intermediate memory measurement=] performed for |the current agent cluster| and |agent clusters|.
   1. [=Queue a global task=] on the TODO task source given |promise|'s [=relevant global object=] to [=resolve=] |promise| with the result of [=creating a new memory measurement=] given |intermediate memory measurement|.
 </div>
 
@@ -831,7 +930,8 @@ The URLs and other string values that appear in the result are guaranteed to be 
 
 The only information that is exposed cross-origin is the size information provided in {{MemoryMeasurement/bytes|memoryMeasurement.bytes}} and  {{MemoryBreakdownEntry/bytes|memoryBreakdownEntry.bytes}}.
 The API relies on the [=environment settings object/cross-origin isolated capability|cross-origin isolation=] mechanism to mitigate cross-origin size information leaks.
-Specifically, the API relies on the invariant that all loaded resources have opted in to be embeddable and legible by their embedding origin.
+Specifically, the API relies on the invariant that all resources in the current address space have opted in to be embeddable and legible by their embedding origin.
+The API does not expose the sizes of cross-origin resources loaded in a different address space.
 
 Fingerprinting {#fingerprinting}
 --------------------------------
@@ -845,6 +945,10 @@ A web page can infer the following information about the user agent:
 
 Similar information can be obtained from the existing APIs ({{NavigatorID/userAgent|navigator.userAgent}}, {{NavigatorID/platform|navigator.platform}}).
 The bitness of the user agent can also be inferred by measuring the runtime of 32-bit and 64-bit operations.
+
+Currently the API is available only to the top-level origin.
+In the future the top-level origin will be able to delegate the API to other origins using Permissions Policy.
+In both cases, cross-origin iframes do not get access to the API by default.
 </div>
 
 Acknowledgements {#acknowledgements}
