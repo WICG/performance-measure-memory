@@ -666,7 +666,7 @@ the memory usage of the given set of [=agent clusters=] in the address space of 
 The result of such an algorithm is an <dfn>intermediate memory measurement</dfn>,
 which is a [=set=] of [=intermediate memory breakdown entries=].
 
-To preserve security guarantees of address space isolation the result must not include memory outside of the current address space.
+To preserve security guarantees of address space isolation, any intermediate memory breakdown entries that represent memory outside the current address space must have their bytes set to 0.
 
 To reduce fingerprinting risks the result must include only the memory related to the web platform objects allocated or used by the given set of agent clusters.
 This, for example, excludes the memory of user-agent-specific extensions and the baseline memory of an empty page.
@@ -674,9 +674,7 @@ The memory must be accounted at the address space level to exclude any platform-
 
 An <dfn>intermediate memory breakdown entry</dfn> is a [=struct=] containing the following [=struct/items=]:
 :  <dfn for="intermediate memory breakdown entry">bytes</dfn>
-:: The size of the memory that this [=intermediate memory breakdown entry=] describes.
-   The size being equal to 0 means that the implementation has omitted the measurement of cross-origin realms
-   that are loaded in a different address space.
+:: The size of the memory that this [=intermediate memory breakdown entry=] describes, or 0 if this entry represents memory outside the current address space.
 
 :  <dfn for="intermediate memory breakdown entry">realms</dfn>
 :: A [=set=] of [=JavaScript realms=] to which the memory is attributed to.
