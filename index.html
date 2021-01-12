@@ -1224,7 +1224,7 @@ Possible extra rowspan handling
   <link href="https://www.w3.org/StyleSheets/TR/2016/cg-draft" rel="stylesheet">
   <meta content="Bikeshed version 40de15f9, updated Thu Jun 11 17:47:04 2020 -0700" name="generator">
   <link href="https://wicg.github.io/performance-measure-memory/" rel="canonical">
-  <meta content="052b68dcd5955d6f3914dbb1b9dafc9bddff0066" name="document-revision">
+  <meta content="0358429d26dccd78fb0cd037c6a321efdfd59f0d" name="document-revision">
 <style>
 /* domintro from https://resources.whatwg.org/standard.css */
 .domintro {
@@ -1513,7 +1513,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">Measure Memory API</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Community Group Report, <time class="dt-updated" datetime="2020-12-11">11 December 2020</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Community Group Report, <time class="dt-updated" datetime="2021-01-12">12 January 2021</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -1525,7 +1525,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     </dl>
    </div>
    <div data-fill-with="warning"></div>
-   <p class="copyright" data-fill-with="copyright"><a href="http://www.w3.org/Consortium/Legal/ipr-notice#Copyright">Copyright</a> © 2020 the Contributors to the Measure Memory API Specification, published by the <a href="https://www.w3.org/community/wicg/">Web Platform Incubator Community Group</a> under the <a href="https://www.w3.org/community/about/agreements/cla/">W3C Community Contributor License Agreement (CLA)</a>.
+   <p class="copyright" data-fill-with="copyright"><a href="http://www.w3.org/Consortium/Legal/ipr-notice#Copyright">Copyright</a> © 2021 the Contributors to the Measure Memory API Specification, published by the <a href="https://www.w3.org/community/wicg/">Web Platform Incubator Community Group</a> under the <a href="https://www.w3.org/community/about/agreements/cla/">W3C Community Contributor License Agreement (CLA)</a>.
 A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/">summary</a> is available. </p>
    <hr title="Separator for header">
   </div>
@@ -1885,6 +1885,45 @@ All memory of these resources is attributed to the first iframe.
 </pre>
     Note that the <code>url</code> and <code>scope</code> fields of the cross-origin iframe entry have
 special values indicating that information is not available. 
+    <p>If the implementation loads cross-origin iframes in a different address space,
+then their memory usage is not measured.
+The breakdown entries of such iframes have <code>bytes: 0</code> indicating that these
+iframes are not accounted for:</p>
+<pre class="language-javascript highlight"><c- p>{</c->
+  bytes<c- o>:</c-> <c- mi>100000</c-><c- p>,</c->
+  breakdown<c- o>:</c-> <c- p>[</c->
+    <c- p>{</c->
+      bytes<c- o>:</c-> <c- mi>1000000</c-><c- p>,</c->
+      attribution<c- o>:</c-> <c- p>[</c->
+        <c- p>{</c->
+          url<c- o>:</c-> <c- u>"https://example.com"</c-><c- p>,</c->
+          scope<c- o>:</c-> <c- u>"Window"</c-><c- p>,</c->
+        <c- p>},</c->
+      <c- p>],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+    <c- p>},</c->
+    <c- p>{</c->
+      bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
+      attribution<c- o>:</c-> <c- p>[</c->
+        <c- p>{</c->
+          url<c- o>:</c-> <c- u>"cross-origin-url"</c-><c- p>,</c->
+          container<c- o>:</c-> <c- p>{</c->
+            id<c- o>:</c-> <c- u>"example-id"</c-><c- p>,</c->
+            src<c- o>:</c-> <c- u>"https://foo.com/iframe1"</c-><c- p>,</c->
+          <c- p>},</c->
+          scope<c- o>:</c-> <c- u>"cross-origin-aggregated"</c-><c- p>,</c->
+        <c- p>},</c->
+      <c- p>],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+    <c- p>},</c->
+    <c- p>{</c->
+      bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
+      attribution<c- o>:</c-> <c- p>[],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
+    <c- p>},</c->
+  <c- p>],</c->
+<c- p>}</c->
+</pre>
    </div>
    <div class="example" id="example-same-and-cross-origin-iframes">
     <a class="self-link" href="#example-same-and-cross-origin-iframes"></a> If a cross-origin iframe embeds an iframe of the same origin as the main page,
@@ -1947,6 +1986,57 @@ Note that there is no information leak because the main page can find and read <
         <c- p>},</c->
       <c- p>],</c->
       userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+    <c- p>},</c->
+  <c- p>],</c->
+<c- p>}</c->
+</pre>
+    <p>If the implementation omits memory measurement of cross-origin iframes,
+then the result could look like:</p>
+<pre class="language-javascript highlight"><c- p>{</c->
+  bytes<c- o>:</c-> <c- mi>1200000</c-><c- p>,</c->
+  breakdown<c- o>:</c-> <c- p>[</c->
+    <c- p>{</c->
+      bytes<c- o>:</c-> <c- mi>1000000</c-><c- p>,</c->
+      attribution<c- o>:</c-> <c- p>[</c->
+        <c- p>{</c->
+          url<c- o>:</c-> <c- u>"https://example.com"</c-><c- p>,</c->
+          scope<c- o>:</c-> <c- u>"Window"</c-><c- p>,</c->
+        <c- p>},</c->
+      <c- p>],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+    <c- p>},</c->
+    <c- p>{</c->
+      bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
+      attribution<c- o>:</c-> <c- p>[</c->
+        <c- p>{</c->
+          url<c- o>:</c-> <c- u>"cross-origin-url"</c-><c- p>,</c->
+          container<c- o>:</c-> <c- p>{</c->
+            id<c- o>:</c-> <c- u>"example-id"</c-><c- p>,</c->
+            src<c- o>:</c-> <c- u>"https://foo.com/iframe1"</c-><c- p>,</c->
+          <c- p>},</c->
+          scope<c- o>:</c-> <c- u>"cross-origin-aggregated"</c-><c- p>,</c->
+        <c- p>},</c->
+      <c- p>],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+    <c- p>},</c->
+    <c- p>{</c->
+      bytes<c- o>:</c-> <c- mi>200000</c-><c- p>,</c->
+      attribution<c- o>:</c-> <c- p>[</c->
+        <c- p>{</c->
+          url<c- o>:</c-> <c- u>"https://example.com/iframe2"</c-><c- p>,</c->
+          container<c- o>:</c-> <c- p>{</c->
+            id<c- o>:</c-> <c- u>"example-id"</c-><c- p>,</c->
+            src<c- o>:</c-> <c- u>"https://foo.com/iframe1"</c-><c- p>,</c->
+          <c- p>},</c->
+          scope<c- o>:</c-> <c- u>"Window"</c-><c- p>,</c->
+        <c- p>},</c->
+      <c- p>],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+    <c- p>},</c->
+    <c- p>{</c->
+      bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
+      attribution<c- o>:</c-> <c- p>[],</c->
+      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
     <c- p>},</c->
   <c- p>],</c->
 <c- p>}</c->
@@ -2034,9 +2124,10 @@ Note that there is no information leak because the main page can find and read <
    </dl>
    <h3 class="heading settled" data-level="2.2" id="intermediate-memory-measurement-section"><span class="secno">2.2. </span><span class="content">Intermediate memory measurement</span><a class="self-link" href="#intermediate-memory-measurement-section"></a></h3>
    <p>This specification assumes the existence of an <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#implementation-defined" id="ref-for-implementation-defined①">implementation-defined</a> algorithm that measures
-the memory usage of the given set of <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent-clusters" id="ref-for-sec-agent-clusters">agent clusters</a>.
+the memory usage of the given set of <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent-clusters" id="ref-for-sec-agent-clusters">agent clusters</a> in the address space of the given current <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent-clusters" id="ref-for-sec-agent-clusters①">agent cluster</a>.
 The result of such an algorithm is an <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="intermediate-memory-measurement">intermediate memory measurement</dfn>,
 which is a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#ordered-set" id="ref-for-ordered-set">set</a> of <a data-link-type="dfn" href="#intermediate-memory-breakdown-entry" id="ref-for-intermediate-memory-breakdown-entry">intermediate memory breakdown entries</a>.</p>
+   <p>To preserve security guarantees of address space isolation, any intermediate memory breakdown entries that represent memory outside the current address space must have their bytes set to 0.</p>
    <p>To reduce fingerprinting risks the result must include only the memory related to the web platform objects allocated or used by the given set of agent clusters.
 This, for example, excludes the memory of user-agent-specific extensions and the baseline memory of an empty page.
 The memory must be accounted at the address space level to exclude any platform-specific memory optimizations such memory compression and lazy memory committing.</p>
@@ -2044,7 +2135,7 @@ The memory must be accounted at the address space level to exclude any platform-
    <dl>
     <dt data-md><dfn class="dfn-paneled" data-dfn-for="intermediate memory breakdown entry" data-dfn-type="dfn" data-noexport id="intermediate-memory-breakdown-entry-bytes">bytes</dfn>
     <dd data-md>
-     <p>The size of the memory that this <a data-link-type="dfn" href="#intermediate-memory-breakdown-entry" id="ref-for-intermediate-memory-breakdown-entry①">intermediate memory breakdown entry</a> describes.</p>
+     <p>The size of the memory that this <a data-link-type="dfn" href="#intermediate-memory-breakdown-entry" id="ref-for-intermediate-memory-breakdown-entry①">intermediate memory breakdown entry</a> describes, or 0 if this entry represents memory outside the current address space.</p>
     <dt data-md><dfn class="dfn-paneled" data-dfn-for="intermediate memory breakdown entry" data-dfn-type="dfn" data-noexport id="intermediate-memory-breakdown-entry-realms">realms</dfn>
     <dd data-md>
      <p>A <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#ordered-set" id="ref-for-ordered-set①">set</a> of <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-code-realms" id="ref-for-sec-code-realms⑤">JavaScript realms</a> to which the memory is attributed to.</p>
@@ -2095,11 +2186,13 @@ It is a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#struct" id=
         <p>Return <a data-link-type="dfn" href="https://heycam.github.io/webidl/#a-promise-rejected-with" id="ref-for-a-promise-rejected-with">a promise rejected with</a> a "<code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#securityerror" id="ref-for-securityerror">SecurityError</a></code>" <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#idl-DOMException" id="ref-for-idl-DOMException">DOMException</a></code>.</p>
       </ol>
      <li data-md>
-      <p>Let <var>agent clusters</var> be the result of <a data-link-type="dfn" href="#getting-all-agent-clusters" id="ref-for-getting-all-agent-clusters">getting all agent clusters</a> given <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent" id="ref-for-sec-agent②">the current Realm</a>.</p>
+      <p>Let <var>the current agent cluster</var> be <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent" id="ref-for-sec-agent②">the current Realm</a>'s <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agents" id="ref-for-sec-agents">agent</a>'s <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent-clusters" id="ref-for-sec-agent-clusters②">agent cluster</a>.</p>
+     <li data-md>
+      <p>Let <var>agent clusters</var> be the result of <a data-link-type="dfn" href="#getting-all-agent-clusters" id="ref-for-getting-all-agent-clusters">getting all agent clusters</a> given <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent" id="ref-for-sec-agent③">the current Realm</a>.</p>
      <li data-md>
       <p>Let <var>promise</var> be a new <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#idl-promise" id="ref-for-idl-promise②">Promise</a></code>.</p>
      <li data-md>
-      <p>Start asynchronous <a data-link-type="dfn" href="#implementation-defined-memory-measurement" id="ref-for-implementation-defined-memory-measurement">implementation-defined memory measurement</a> given <var>agent clusters</var> and <var>promise</var>.</p>
+      <p>Start asynchronous <a data-link-type="dfn" href="#implementation-defined-memory-measurement" id="ref-for-implementation-defined-memory-measurement">implementation-defined memory measurement</a> given <var>the current agent cluster</var>, <var>agent clusters</var>, and <var>promise</var>.</p>
      <li data-md>
       <p>Return <var>promise</var>.</p>
     </ol>
@@ -2137,15 +2230,15 @@ It is a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#struct" id=
         <p>Return the result of <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#map-getting-the-values" id="ref-for-map-getting-the-values">getting the values</a> of <var>group</var>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/browsers.html#agent-cluster-map" id="ref-for-agent-cluster-map">agent cluster map</a>.</p>
       </ol>
      <li data-md>
-      <p>Return « <var>realm</var>’s <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agents" id="ref-for-sec-agents">agent</a>'s <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent-clusters" id="ref-for-sec-agent-clusters①">agent cluster</a> ».</p>
+      <p>Return « <var>realm</var>’s <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agents" id="ref-for-sec-agents①">agent</a>'s <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent-clusters" id="ref-for-sec-agent-clusters③">agent cluster</a> ».</p>
     </ol>
    </div>
    <div class="algorithm" data-algorithm="implementation-defined memory measurement">
-     To perform <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="implementation-defined-memory-measurement">implementation-defined memory measurement</dfn> given a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#ordered-set" id="ref-for-ordered-set③">set</a> of <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent-clusters" id="ref-for-sec-agent-clusters②">agent clusters</a> <var>agent clusters</var> and
+     To perform <dfn class="dfn-paneled" data-dfn-type="dfn" data-noexport id="implementation-defined-memory-measurement">implementation-defined memory measurement</dfn> given given an <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent-clusters" id="ref-for-sec-agent-clusters④">agent cluster</a> <var>the current agent cluster</var>, a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#ordered-set" id="ref-for-ordered-set③">set</a> of <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent-clusters" id="ref-for-sec-agent-clusters⑤">agent clusters</a> <var>agent clusters</var>, and
   a <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#idl-promise" id="ref-for-idl-promise③">Promise</a></code> <var>promise</var> run these steps <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/infrastructure.html#in-parallel" id="ref-for-in-parallel">in parallel</a>: 
     <ol>
      <li data-md>
-      <p>Let <var>intermediate memory measurement</var> be an <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#implementation-defined" id="ref-for-implementation-defined③">implementation-defined</a> <a data-link-type="dfn" href="#intermediate-memory-measurement" id="ref-for-intermediate-memory-measurement①">intermediate memory measurement</a> of <var>agent clusters</var>.</p>
+      <p>Let <var>intermediate memory measurement</var> be <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#implementation-defined" id="ref-for-implementation-defined③">implementation-defined</a> <a data-link-type="dfn" href="#intermediate-memory-measurement" id="ref-for-intermediate-memory-measurement①">intermediate memory measurement</a> performed for <var>the current agent cluster</var> and <var>agent clusters</var>.</p>
      <li data-md>
       <p><a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#queue-a-global-task" id="ref-for-queue-a-global-task">Queue a global task</a> on the TODO task source given <var>promise</var>’s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-relevant-global" id="ref-for-concept-relevant-global">relevant global object</a> to <a data-link-type="dfn" href="https://heycam.github.io/webidl/#resolve" id="ref-for-resolve">resolve</a> <var>promise</var> with the result of <a data-link-type="dfn" href="#creating-a-new-memory-measurement" id="ref-for-creating-a-new-memory-measurement">creating a new memory measurement</a> given <var>intermediate memory measurement</var>.</p>
     </ol>
@@ -2435,7 +2528,8 @@ the <a data-link-type="dfn" href="#windoworworkerglobalscope-memory-attribution-
     <p>The URLs and other string values that appear in the result are guaranteed to be known to the origin that invokes the API.</p>
     <p>The only information that is exposed cross-origin is the size information provided in <code class="idl"><a data-link-type="idl" href="#dom-memorymeasurement-bytes" id="ref-for-dom-memorymeasurement-bytes③">memoryMeasurement.bytes</a></code> and <code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-bytes" id="ref-for-dom-memorybreakdownentry-bytes③">memoryBreakdownEntry.bytes</a></code>.
 The API relies on the <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-cross-origin-isolated-capability" id="ref-for-concept-settings-object-cross-origin-isolated-capability②">cross-origin isolation</a> mechanism to mitigate cross-origin size information leaks.
-Specifically, the API relies on the invariant that all loaded resources have opted in to be embeddable and legible by their embedding origin.</p>
+Specifically, the API relies on the invariant that all resources in the current address space have opted in to be embeddable and legible by their embedding origin.
+The API does not expose the sizes of cross-origin resources loaded in a different address space.</p>
     <h3 class="heading settled" data-level="5.2" id="fingerprinting"><span class="secno">5.2. </span><span class="content">Fingerprinting</span><a class="self-link" href="#fingerprinting"></a></h3>
     <p>The result of the API depends only on the objects allocated by the web page itself and does not include unrelated memory such as the baseline memory usage of an empty web page.
 This means the same user agent binary running on two different devices should produce the same results for a fixed web page.</p>
@@ -2448,6 +2542,9 @@ This means the same user agent binary running on two different devices should pr
     </ul>
     <p>Similar information can be obtained from the existing APIs (<code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/system-state.html#dom-navigator-useragent" id="ref-for-dom-navigator-useragent">navigator.userAgent</a></code>, <code class="idl"><a data-link-type="idl" href="https://html.spec.whatwg.org/multipage/system-state.html#dom-navigator-platform" id="ref-for-dom-navigator-platform">navigator.platform</a></code>).
 The bitness of the user agent can also be inferred by measuring the runtime of 32-bit and 64-bit operations.</p>
+    <p>Currently the API is available only to the top-level origin.
+In the future the top-level origin will be able to delegate the API to other origins using Permissions Policy.
+In both cases, cross-origin iframes do not get access to the API by default.</p>
    </div>
    <h2 class="heading settled" data-level="6" id="acknowledgements"><span class="secno">6. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
     Thanks to Domenic Denicola and Shu-yu Guo for contributing to the API design and for reviewing this specification. 
@@ -2647,14 +2744,14 @@ The bitness of the user agent can also be inferred by measuring the runtime of 3
   <aside class="dfn-panel" data-for="term-for-sec-agents">
    <a href="https://tc39.es/ecma262/#sec-agents">https://tc39.es/ecma262/#sec-agents</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-sec-agents">3.2. Top-level algorithms</a>
+    <li><a href="#ref-for-sec-agents">3.2. Top-level algorithms</a> <a href="#ref-for-sec-agents①">(2)</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-sec-agent-clusters">
    <a href="https://tc39.es/ecma262/#sec-agent-clusters">https://tc39.es/ecma262/#sec-agent-clusters</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-sec-agent-clusters">2.2. Intermediate memory measurement</a>
-    <li><a href="#ref-for-sec-agent-clusters①">3.2. Top-level algorithms</a> <a href="#ref-for-sec-agent-clusters②">(2)</a>
+    <li><a href="#ref-for-sec-agent-clusters">2.2. Intermediate memory measurement</a> <a href="#ref-for-sec-agent-clusters①">(2)</a>
+    <li><a href="#ref-for-sec-agent-clusters②">3.2. Top-level algorithms</a> <a href="#ref-for-sec-agent-clusters③">(2)</a> <a href="#ref-for-sec-agent-clusters④">(3)</a> <a href="#ref-for-sec-agent-clusters⑤">(4)</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-sec-code-realms">
@@ -2680,7 +2777,7 @@ The bitness of the user agent can also be inferred by measuring the runtime of 3
   <aside class="dfn-panel" data-for="term-for-sec-agent">
    <a href="https://tc39.es/ecma262/#sec-agent">https://tc39.es/ecma262/#sec-agent</a><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-sec-agent">3.2. Top-level algorithms</a> <a href="#ref-for-sec-agent①">(2)</a> <a href="#ref-for-sec-agent②">(3)</a>
+    <li><a href="#ref-for-sec-agent">3.2. Top-level algorithms</a> <a href="#ref-for-sec-agent①">(2)</a> <a href="#ref-for-sec-agent②">(3)</a> <a href="#ref-for-sec-agent③">(4)</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="term-for-sec-performance">
