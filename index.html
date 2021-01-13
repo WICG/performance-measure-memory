@@ -1224,7 +1224,7 @@ Possible extra rowspan handling
   <link href="https://www.w3.org/StyleSheets/TR/2016/cg-draft" rel="stylesheet">
   <meta content="Bikeshed version 40de15f9, updated Thu Jun 11 17:47:04 2020 -0700" name="generator">
   <link href="https://wicg.github.io/performance-measure-memory/" rel="canonical">
-  <meta content="0358429d26dccd78fb0cd037c6a321efdfd59f0d" name="document-revision">
+  <meta content="cdf9e5d108a091d72974e9d36472b74d0d869985" name="document-revision">
 <style>
 /* domintro from https://resources.whatwg.org/standard.css */
 .domintro {
@@ -1513,7 +1513,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">Measure Memory API</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Community Group Report, <time class="dt-updated" datetime="2021-01-12">12 January 2021</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Community Group Report, <time class="dt-updated" datetime="2021-01-13">13 January 2021</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -1600,7 +1600,7 @@ A human-readable <a href="http://www.w3.org/community/about/agreements/cla-deed/
    <div nonnormative>
      The tradeoff between memory and performance is inherent in many algorithms and data-structures.
 Web developers today have multiple ways to measure the timing information and no standard way to measure the memory usage.
-This specification defines a <code class="idl"><a data-link-type="idl" href="#dom-performance-measurememory" id="ref-for-dom-performance-measurememory">performance.measureMemory()</a></code> API that estimates the memory usage of the web application including all its iframes and workers.
+This specification defines a <code class="idl"><a data-link-type="idl" href="#dom-performance-measureuseragentspecificmemory" id="ref-for-dom-performance-measureuseragentspecificmemory">performance.measureUserAgentSpecificMemory()</a></code> API that estimates the memory usage of the web application including all its iframes and workers.
 The new API is intended for aggregating memory usage data from production. The main use cases are: 
     <ul>
      <li data-md>
@@ -1615,10 +1615,10 @@ The new API is intended for aggregating memory usage data from production. The m
    <h3 class="heading settled" data-level="1.1" id="examples"><span class="secno">1.1. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h3>
    <div class="example" id="example-simple-page">
     <a class="self-link" href="#example-simple-page"></a> 
-    <p>A <code class="idl"><a data-link-type="idl" href="#dom-performance-measurememory" id="ref-for-dom-performance-measurememory①">performance.measureMemory()</a></code> call returns a <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#idl-promise" id="ref-for-idl-promise">Promise</a></code> and starts
+    <p>A <code class="idl"><a data-link-type="idl" href="#dom-performance-measureuseragentspecificmemory" id="ref-for-dom-performance-measureuseragentspecificmemory①">performance.measureUserAgentSpecificMemory()</a></code> call returns a <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#idl-promise" id="ref-for-idl-promise">Promise</a></code> and starts
 an asynchronous measurement of the memory allocated by the page.</p>
 <pre class="language-javascript highlight">async <c- a>function</c-> run<c- p>()</c-> <c- p>{</c->
-  <c- kr>const</c-> result <c- o>=</c-> await performance<c- p>.</c->measureMemory<c- p>();</c->
+  <c- kr>const</c-> result <c- o>=</c-> await performance<c- p>.</c->measureUserAgentSpecificMemory<c- p>();</c->
   console<c- p>.</c->log<c- p>(</c->result<c- p>);</c->
 <c- p>}</c->
 run<c- p>();</c->
@@ -1635,12 +1635,12 @@ run<c- p>();</c->
           scope<c- o>:</c-> <c- u>"Window"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+      types<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
       attribution<c- o>:</c-> <c- p>[],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
+      types<c- o>:</c-> <c- p>[],</c->
     <c- p>},</c->
   <c- p>],</c->
 <c- p>}</c->
@@ -1661,7 +1661,7 @@ Such an entry is inserted at a random position if the list is not empty.
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
       attribution<c- o>:</c-> <c- p>[],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
+      types<c- o>:</c-> <c- p>[],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>1000000</c-><c- p>,</c->
@@ -1671,7 +1671,7 @@ Such an entry is inserted at a random position if the list is not empty.
           scope<c- o>:</c-> <c- u>"Window"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
+      types<c- o>:</c-> <c- p>[],</c->
     <c- p>},</c->
   <c- p>],</c->
 <c- p>}</c->
@@ -1699,12 +1699,12 @@ to that iframe and provide diagnostic information for identifying the iframe:</p
           scope<c- o>:</c-> <c- u>"Window"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"DOM"</c-><c- p>,</c-> <c- u>"JS"</c-><c- p>],</c->
+      types<c- o>:</c-> <c- p>[</c-><c- u>"DOM"</c-><c- p>,</c-> <c- u>"JS"</c-><c- p>],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
       attribution<c- o>:</c-> <c- p>[],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
+      types<c- o>:</c-> <c- p>[],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>500000</c-><c- p>,</c->
@@ -1718,7 +1718,7 @@ to that iframe and provide diagnostic information for identifying the iframe:</p
           scope<c- o>:</c-> <c- u>"Window"</c-><c- p>,</c->
         <c- p>}</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+      types<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
     <c- p>},</c->
   <c- p>],</c->
 <c- p>}</c->
@@ -1748,12 +1748,12 @@ An implementation is allowed to lump together some or all of iframe and page mem
           scope<c- o>:</c-> <c- u>"Window"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+      types<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
       attribution<c- o>:</c-> <c- p>[],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
+      types<c- o>:</c-> <c- p>[],</c->
     <c- p>},</c->
   <c- p>],</c->
 <c- p>};</c->
@@ -1767,7 +1767,7 @@ An implementation is allowed to lump together some or all of iframe and page mem
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
       attribution<c- o>:</c-> <c- p>[],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
+      types<c- o>:</c-> <c- p>[],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>1000000</c-><c- p>,</c->
@@ -1777,7 +1777,7 @@ An implementation is allowed to lump together some or all of iframe and page mem
           scope<c- o>:</c-> <c- u>"Window"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+      types<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>800000</c-><c- p>,</c->
@@ -1787,7 +1787,7 @@ An implementation is allowed to lump together some or all of iframe and page mem
           scope<c- o>:</c-> <c- u>"DedicatedWorkerGlobalScope"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>],</c->
+      types<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>],</c->
     <c- p>},</c->
   <c- p>],</c->
 <c- p>};</c->
@@ -1798,7 +1798,7 @@ corresponding to the iframe element.
     <p>Memory of shared and service workers is not included in the result.</p>
    </div>
    <div class="example" id="example-shared-worker">
-    <a class="self-link" href="#example-shared-worker"></a> To get the memory usage of a shared/service worker, the <code class="idl"><a data-link-type="idl" href="#dom-performance-measurememory" id="ref-for-dom-performance-measurememory②">performance.measureMemory()</a></code> function needs to be invoked in the context of that worker.
+    <a class="self-link" href="#example-shared-worker"></a> To get the memory usage of a shared/service worker, the <code class="idl"><a data-link-type="idl" href="#dom-performance-measureuseragentspecificmemory" id="ref-for-dom-performance-measureuseragentspecificmemory②">performance.measureUserAgentSpecificMemory()</a></code> function needs to be invoked in the context of that worker.
 The result could be something like: 
 <pre class="language-javascript highlight"><c- p>{</c->
   bytes<c- o>:</c-> <c- mi>1000000</c-><c- p>,</c->
@@ -1811,12 +1811,12 @@ The result could be something like:
           scope<c- o>:</c-> <c- u>"ServiceWorkerGlobalScope"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>],</c->
+      types<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
       attribution<c- o>:</c-> <c- p>[],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
+      types<c- o>:</c-> <c- p>[],</c->
     <c- p>},</c->
   <c- p>],</c->
 <c- p>}</c->
@@ -1859,12 +1859,12 @@ All memory of these resources is attributed to the first iframe.
           scope<c- o>:</c-> <c- u>"Window"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+      types<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
       attribution<c- o>:</c-> <c- p>[],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
+      types<c- o>:</c-> <c- p>[],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>1400000</c-><c- p>,</c->
@@ -1878,7 +1878,7 @@ All memory of these resources is attributed to the first iframe.
           scope<c- o>:</c-> <c- u>"cross-origin-aggregated"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"DOM"</c-><c- p>,</c-> <c- u>"JS"</c-><c- p>],</c->
+      types<c- o>:</c-> <c- p>[</c-><c- u>"DOM"</c-><c- p>,</c-> <c- u>"JS"</c-><c- p>],</c->
     <c- p>},</c->
   <c- p>],</c->
 <c- p>}</c->
@@ -1900,7 +1900,7 @@ iframes are not accounted for:</p>
           scope<c- o>:</c-> <c- u>"Window"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+      types<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
@@ -1914,12 +1914,12 @@ iframes are not accounted for:</p>
           scope<c- o>:</c-> <c- u>"cross-origin-aggregated"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+      types<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
       attribution<c- o>:</c-> <c- p>[],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
+      types<c- o>:</c-> <c- p>[],</c->
     <c- p>},</c->
   <c- p>],</c->
 <c- p>}</c->
@@ -1952,12 +1952,12 @@ Note that there is no information leak because the main page can find and read <
           scope<c- o>:</c-> <c- u>"Window"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"DOM"</c-><c- p>,</c-> <c- u>"JS"</c-><c- p>],</c->
+      types<c- o>:</c-> <c- p>[</c-><c- u>"DOM"</c-><c- p>,</c-> <c- u>"JS"</c-><c- p>],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
       attribution<c- o>:</c-> <c- p>[],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
+      types<c- o>:</c-> <c- p>[],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>500000</c-><c- p>,</c->
@@ -1971,7 +1971,7 @@ Note that there is no information leak because the main page can find and read <
           scope<c- o>:</c-> <c- u>"cross-origin-aggregated"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"DOM"</c-><c- p>,</c-> <c- u>"JS"</c-><c- p>],</c->
+      types<c- o>:</c-> <c- p>[</c-><c- u>"DOM"</c-><c- p>,</c-> <c- u>"JS"</c-><c- p>],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>200000</c-><c- p>,</c->
@@ -1985,7 +1985,7 @@ Note that there is no information leak because the main page can find and read <
           scope<c- o>:</c-> <c- u>"Window"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+      types<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
     <c- p>},</c->
   <c- p>],</c->
 <c- p>}</c->
@@ -2003,7 +2003,7 @@ then the result could look like:</p>
           scope<c- o>:</c-> <c- u>"Window"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+      types<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
@@ -2017,7 +2017,7 @@ then the result could look like:</p>
           scope<c- o>:</c-> <c- u>"cross-origin-aggregated"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+      types<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>200000</c-><c- p>,</c->
@@ -2031,12 +2031,12 @@ then the result could look like:</p>
           scope<c- o>:</c-> <c- u>"Window"</c-><c- p>,</c->
         <c- p>},</c->
       <c- p>],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
+      types<c- o>:</c-> <c- p>[</c-><c- u>"JS"</c-><c- p>,</c-> <c- u>"DOM"</c-><c- p>],</c->
     <c- p>},</c->
     <c- p>{</c->
       bytes<c- o>:</c-> <c- mi>0</c-><c- p>,</c->
       attribution<c- o>:</c-> <c- p>[],</c->
-      userAgentSpecificTypes<c- o>:</c-> <c- p>[],</c->
+      types<c- o>:</c-> <c- p>[],</c->
     <c- p>},</c->
   <c- p>],</c->
 <c- p>}</c->
@@ -2044,7 +2044,7 @@ then the result could look like:</p>
    </div>
    <h2 class="heading settled" data-level="2" id="data-model"><span class="secno">2. </span><span class="content">Data model</span><a class="self-link" href="#data-model"></a></h2>
    <h3 class="heading settled" data-level="2.1" id="memory-measurement-result"><span class="secno">2.1. </span><span class="content">Memory measurement result</span><a class="self-link" href="#memory-measurement-result"></a></h3>
-   <p>The <code class="idl"><a data-link-type="idl" href="#dom-performance-measurememory" id="ref-for-dom-performance-measurememory③">performance.measureMemory()</a></code> function returns a <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#idl-promise" id="ref-for-idl-promise①">Promise</a></code> that resolves to an instance of <code class="idl"><a data-link-type="idl" href="#dictdef-memorymeasurement" id="ref-for-dictdef-memorymeasurement">MemoryMeasurement</a></code> dictionary:</p>
+   <p>The <code class="idl"><a data-link-type="idl" href="#dom-performance-measureuseragentspecificmemory" id="ref-for-dom-performance-measureuseragentspecificmemory③">performance.measureUserAgentSpecificMemory()</a></code> function returns a <code class="idl"><a data-link-type="idl" href="https://heycam.github.io/webidl/#idl-promise" id="ref-for-idl-promise①">Promise</a></code> that resolves to an instance of <code class="idl"><a data-link-type="idl" href="#dictdef-memorymeasurement" id="ref-for-dictdef-memorymeasurement">MemoryMeasurement</a></code> dictionary:</p>
 <pre class="idl highlight def"><c- b>dictionary</c-> <dfn class="dfn-paneled idl-code" data-dfn-type="dictionary" data-export id="dictdef-memorymeasurement"><code><c- g>MemoryMeasurement</c-></code></dfn> {
   <a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-unsigned-long-long" id="ref-for-idl-unsigned-long-long"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></a> <dfn class="dfn-paneled idl-code" data-dfn-for="MemoryMeasurement" data-dfn-type="dict-member" data-export data-type="unsigned long long " id="dom-memorymeasurement-bytes"><code><c- g>bytes</c-></code></dfn>;
   <c- b>sequence</c->&lt;<a class="n" data-link-type="idl-name" href="#dictdef-memorybreakdownentry" id="ref-for-dictdef-memorybreakdownentry"><c- n>MemoryBreakdownEntry</c-></a>> <dfn class="dfn-paneled idl-code" data-dfn-for="MemoryMeasurement" data-dfn-type="dict-member" data-export data-type="sequence<MemoryBreakdownEntry> " id="dom-memorymeasurement-breakdown"><code><c- g>breakdown</c-></code></dfn>;
@@ -2064,7 +2064,7 @@ then the result could look like:</p>
 <pre class="idl highlight def"><c- b>dictionary</c-> <dfn class="dfn-paneled idl-code" data-dfn-type="dictionary" data-export id="dictdef-memorybreakdownentry"><code><c- g>MemoryBreakdownEntry</c-></code></dfn> {
   <a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-unsigned-long-long" id="ref-for-idl-unsigned-long-long①"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></a> <dfn class="dfn-paneled idl-code" data-dfn-for="MemoryBreakdownEntry" data-dfn-type="dict-member" data-export data-type="unsigned long long " id="dom-memorybreakdownentry-bytes"><code><c- g>bytes</c-></code></dfn>;
   <c- b>sequence</c->&lt;<a class="n" data-link-type="idl-name" href="#dictdef-memoryattribution" id="ref-for-dictdef-memoryattribution"><c- n>MemoryAttribution</c-></a>> <dfn class="dfn-paneled idl-code" data-dfn-for="MemoryBreakdownEntry" data-dfn-type="dict-member" data-export data-type="sequence<MemoryAttribution> " id="dom-memorybreakdownentry-attribution"><code><c- g>attribution</c-></code></dfn>;
-  <c- b>sequence</c->&lt;<a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-DOMString" id="ref-for-idl-DOMString"><c- b>DOMString</c-></a>> <dfn class="dfn-paneled idl-code" data-dfn-for="MemoryBreakdownEntry" data-dfn-type="dict-member" data-export data-type="sequence<DOMString> " id="dom-memorybreakdownentry-useragentspecifictypes"><code><c- g>userAgentSpecificTypes</c-></code></dfn>;
+  <c- b>sequence</c->&lt;<a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-DOMString" id="ref-for-idl-DOMString"><c- b>DOMString</c-></a>> <dfn class="dfn-paneled idl-code" data-dfn-for="MemoryBreakdownEntry" data-dfn-type="dict-member" data-export data-type="sequence<DOMString> " id="dom-memorybreakdownentry-types"><code><c- g>types</c-></code></dfn>;
 };
 </pre>
    <dl class="domintro">
@@ -2075,7 +2075,7 @@ then the result could look like:</p>
      <dt data-md><code>breakdown . <code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-attribution" id="ref-for-dom-memorybreakdownentry-attribution">attribution</a></code></code>
      <dd data-md>
       <p>An array of URLs and/or container elements of the <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-code-realms" id="ref-for-sec-code-realms">JavaScript realms</a> that use the memory.</p>
-     <dt data-md><code>breakdown . <code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-useragentspecifictypes" id="ref-for-dom-memorybreakdownentry-useragentspecifictypes">userAgentSpecificTypes</a></code></code>
+     <dt data-md><code>breakdown . <code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-types" id="ref-for-dom-memorybreakdownentry-types">types</a></code></code>
      <dd data-md>
       <p>An array of <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#implementation-defined" id="ref-for-implementation-defined">implementation-defined</a> memory types associated with the memory. </p>
     </dl>
@@ -2139,7 +2139,7 @@ The memory must be accounted at the address space level to exclude any platform-
     <dt data-md><dfn class="dfn-paneled" data-dfn-for="intermediate memory breakdown entry" data-dfn-type="dfn" data-noexport id="intermediate-memory-breakdown-entry-realms">realms</dfn>
     <dd data-md>
      <p>A <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#ordered-set" id="ref-for-ordered-set①">set</a> of <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-code-realms" id="ref-for-sec-code-realms⑤">JavaScript realms</a> to which the memory is attributed to.</p>
-    <dt data-md><dfn class="dfn-paneled" data-dfn-for="intermediate memory breakdown entry" data-dfn-type="dfn" data-noexport id="intermediate-memory-breakdown-entry-user-agent-specific-types">user agent specific types</dfn>
+    <dt data-md><dfn class="dfn-paneled" data-dfn-for="intermediate memory breakdown entry" data-dfn-type="dfn" data-noexport id="intermediate-memory-breakdown-entry-types">types</dfn>
     <dd data-md>
      <p>A <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#ordered-set" id="ref-for-ordered-set②">set</a> of <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#string" id="ref-for-string">strings</a> specifying <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#implementation-defined" id="ref-for-implementation-defined②">implementation-defined</a> memory types associated with the memory.</p>
    </dl>
@@ -2162,20 +2162,20 @@ It is a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#struct" id=
    <h2 class="heading settled" data-level="3" id="processing-model"><span class="secno">3. </span><span class="content">Processing model</span><a class="self-link" href="#processing-model"></a></h2>
    <h3 class="heading settled" data-level="3.1" id="extensions-to-performance"><span class="secno">3.1. </span><span class="content">Extensions to the <code class="idl"><a data-link-type="idl" href="https://w3c.github.io/hr-time/#sec-performance" id="ref-for-sec-performance">Performance</a></code> interface</span><a class="self-link" href="#extensions-to-performance"></a></h3>
 <pre class="idl highlight def"><c- b>partial</c-> <c- b>interface</c-> <a class="idl-code" data-link-type="interface" href="https://w3c.github.io/hr-time/#sec-performance" id="ref-for-sec-performance①"><c- g>Performance</c-></a> {
-  [<a class="idl-code" data-link-type="extended-attribute" href="https://github.com/heycam/webidl#pull/883" id="ref-for-pull/883"><c- g>CrossOriginIsolated</c-></a>] <c- b>Promise</c->&lt;<a class="n" data-link-type="idl-name" href="#dictdef-memorymeasurement" id="ref-for-dictdef-memorymeasurement②"><c- n>MemoryMeasurement</c-></a>> <a class="idl-code" data-link-type="method" href="#dom-performance-measurememory" id="ref-for-dom-performance-measurememory④"><c- g>measureMemory</c-></a>();
+  [<a class="idl-code" data-link-type="extended-attribute" href="https://github.com/heycam/webidl#pull/883" id="ref-for-pull/883"><c- g>CrossOriginIsolated</c-></a>] <c- b>Promise</c->&lt;<a class="n" data-link-type="idl-name" href="#dictdef-memorymeasurement" id="ref-for-dictdef-memorymeasurement②"><c- n>MemoryMeasurement</c-></a>> <a class="idl-code" data-link-type="method" href="#dom-performance-measureuseragentspecificmemory" id="ref-for-dom-performance-measureuseragentspecificmemory④"><c- g>measureUserAgentSpecificMemory</c-></a>();
 };
 </pre>
    <dl class="domintro">
     <dl>
-     <dt data-md><code>performance . <code class="idl"><a data-link-type="idl" href="#dom-performance-measurememory" id="ref-for-dom-performance-measurememory⑤">measureMemory()</a></code></code>
+     <dt data-md><code>performance . <code class="idl"><a data-link-type="idl" href="#dom-performance-measureuseragentspecificmemory" id="ref-for-dom-performance-measureuseragentspecificmemory⑤">measureUserAgentSpecificMemory()</a></code></code>
      <dd data-md>
       <p>A method that performs an asynchronous memory measurement. Details about the result of the method are in <a href="#memory-measurement-result">§ 2.1 Memory measurement result</a>. </p>
     </dl>
     <p></p>
    </dl>
    <h3 class="heading settled" data-level="3.2" id="top-level-algorithms"><span class="secno">3.2. </span><span class="content">Top-level algorithms</span><a class="self-link" href="#top-level-algorithms"></a></h3>
-   <div class="algorithm" data-algorithm="measureMemory()" data-algorithm-for="Performance">
-     The <dfn class="dfn-paneled idl-code" data-dfn-for="Performance" data-dfn-type="method" data-export id="dom-performance-measurememory"><code>measureMemory()</code></dfn> method steps are: 
+   <div class="algorithm" data-algorithm="measureUserAgentSpecificMemory()" data-algorithm-for="Performance">
+     The <dfn class="dfn-paneled idl-code" data-dfn-for="Performance" data-dfn-type="method" data-export id="dom-performance-measureuseragentspecificmemory"><code>measureUserAgentSpecificMemory()</code></dfn> method steps are: 
     <ol>
      <li data-md>
       <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#assert" id="ref-for-assert">Assert</a>: <a data-link-type="dfn" href="https://tc39.es/ecma262/#sec-agent" id="ref-for-sec-agent">the current Realm</a>'s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-realm-settings-object" id="ref-for-concept-realm-settings-object">settings objects</a>'s <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-cross-origin-isolated-capability" id="ref-for-concept-settings-object-cross-origin-isolated-capability①">cross-origin isolated capability</a> is true.</p>
@@ -2265,7 +2265,7 @@ It is a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#struct" id=
        <li data-md>
         <p><code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-attribution" id="ref-for-dom-memorybreakdownentry-attribution①">attribution</a></code> is « »,</p>
        <li data-md>
-        <p><code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-useragentspecifictypes" id="ref-for-dom-memorybreakdownentry-useragentspecifictypes①">userAgentSpecificTypes</a></code> is « ».</p>
+        <p><code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-types" id="ref-for-dom-memorybreakdownentry-types①">types</a></code> is « ».</p>
       </ul>
      <li data-md>
       <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#list-iterate" id="ref-for-list-iterate①">For each</a> <a data-link-type="dfn" href="#intermediate-memory-breakdown-entry" id="ref-for-intermediate-memory-breakdown-entry③">intermediate memory breakdown entry</a> <var>intermediate entry</var> in <var>intermediate measurement</var>:</p>
@@ -2301,7 +2301,7 @@ It is a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#struct" id=
         <p><a data-link-type="dfn" href="https://infra.spec.whatwg.org/#list-append" id="ref-for-list-append②">Append</a> <var>attribution entry</var> to <var>attribution</var>.</p>
       </ol>
      <li data-md>
-      <p>Let <var>types</var> be <var>intermediate entry</var>’s <a data-link-type="dfn" href="#intermediate-memory-breakdown-entry-user-agent-specific-types" id="ref-for-intermediate-memory-breakdown-entry-user-agent-specific-types">user agent specific types</a>.</p>
+      <p>Let <var>types</var> be <var>intermediate entry</var>’s <a data-link-type="dfn" href="#intermediate-memory-breakdown-entry-types" id="ref-for-intermediate-memory-breakdown-entry-types">types</a>.</p>
      <li data-md>
       <p>Randomize the order of the items in <var>types</var>.</p>
      <li data-md>
@@ -2312,7 +2312,7 @@ It is a <a data-link-type="dfn" href="https://infra.spec.whatwg.org/#struct" id=
        <li data-md>
         <p><code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-attribution" id="ref-for-dom-memorybreakdownentry-attribution②">attribution</a></code> is <var>attribution</var>,</p>
        <li data-md>
-        <p><code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-useragentspecifictypes" id="ref-for-dom-memorybreakdownentry-useragentspecifictypes②">userAgentSpecificTypes</a></code> is <var>types</var>.</p>
+        <p><code class="idl"><a data-link-type="idl" href="#dom-memorybreakdownentry-types" id="ref-for-dom-memorybreakdownentry-types②">types</a></code> is <var>types</var>.</p>
       </ul>
     </ol>
    </div>
@@ -2712,7 +2712,7 @@ In both cases, cross-origin iframes do not get access to the API by default.</p>
    <li><a href="#implementation-defined-memory-measurement">implementation-defined memory measurement</a><span>, in §3.2</span>
    <li><a href="#intermediate-memory-breakdown-entry">intermediate memory breakdown entry</a><span>, in §2.2</span>
    <li><a href="#intermediate-memory-measurement">intermediate memory measurement</a><span>, in §2.2</span>
-   <li><a href="#dom-performance-measurememory">measureMemory()</a><span>, in §3.2</span>
+   <li><a href="#dom-performance-measureuseragentspecificmemory">measureUserAgentSpecificMemory()</a><span>, in §3.2</span>
    <li><a href="#dictdef-memoryattribution">MemoryAttribution</a><span>, in §2.1</span>
    <li><a href="#dictdef-memoryattributioncontainer">MemoryAttributionContainer</a><span>, in §2.1</span>
    <li>
@@ -2731,9 +2731,13 @@ In both cases, cross-origin iframes do not get access to the API by default.</p>
    <li><a href="#intermediate-memory-breakdown-entry-realms">realms</a><span>, in §2.2</span>
    <li><a href="#dom-memoryattribution-scope">scope</a><span>, in §2.1</span>
    <li><a href="#dom-memoryattributioncontainer-src">src</a><span>, in §2.1</span>
+   <li>
+    types
+    <ul>
+     <li><a href="#intermediate-memory-breakdown-entry-types">dfn for intermediate memory breakdown entry</a><span>, in §2.2</span>
+     <li><a href="#dom-memorybreakdownentry-types">dict-member for MemoryBreakdownEntry</a><span>, in §2.1</span>
+    </ul>
    <li><a href="#dom-memoryattribution-url">url</a><span>, in §2.1</span>
-   <li><a href="#intermediate-memory-breakdown-entry-user-agent-specific-types">user agent specific types</a><span>, in §2.2</span>
-   <li><a href="#dom-memorybreakdownentry-useragentspecifictypes">userAgentSpecificTypes</a><span>, in §2.1</span>
   </ul>
   <aside class="dfn-panel" data-for="term-for-concept-element-local-name">
    <a href="https://dom.spec.whatwg.org/#concept-element-local-name">https://dom.spec.whatwg.org/#concept-element-local-name</a><b>Referenced in:</b>
@@ -3190,7 +3194,7 @@ In both cases, cross-origin iframes do not get access to the API by default.</p>
 <c- b>dictionary</c-> <a href="#dictdef-memorybreakdownentry"><code><c- g>MemoryBreakdownEntry</c-></code></a> {
   <a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-unsigned-long-long"><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-></a> <a data-type="unsigned long long " href="#dom-memorybreakdownentry-bytes"><code><c- g>bytes</c-></code></a>;
   <c- b>sequence</c->&lt;<a class="n" data-link-type="idl-name" href="#dictdef-memoryattribution"><c- n>MemoryAttribution</c-></a>> <a data-type="sequence<MemoryAttribution> " href="#dom-memorybreakdownentry-attribution"><code><c- g>attribution</c-></code></a>;
-  <c- b>sequence</c->&lt;<a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-DOMString"><c- b>DOMString</c-></a>> <a data-type="sequence<DOMString> " href="#dom-memorybreakdownentry-useragentspecifictypes"><code><c- g>userAgentSpecificTypes</c-></code></a>;
+  <c- b>sequence</c->&lt;<a class="idl-code" data-link-type="interface" href="https://heycam.github.io/webidl/#idl-DOMString"><c- b>DOMString</c-></a>> <a data-type="sequence<DOMString> " href="#dom-memorybreakdownentry-types"><code><c- g>types</c-></code></a>;
 };
 
 <c- b>dictionary</c-> <a href="#dictdef-memoryattribution"><code><c- g>MemoryAttribution</c-></code></a> {
@@ -3205,7 +3209,7 @@ In both cases, cross-origin iframes do not get access to the API by default.</p>
 };
 
 <c- b>partial</c-> <c- b>interface</c-> <a class="idl-code" data-link-type="interface" href="https://w3c.github.io/hr-time/#sec-performance"><c- g>Performance</c-></a> {
-  [<a class="idl-code" data-link-type="extended-attribute" href="https://github.com/heycam/webidl#pull/883"><c- g>CrossOriginIsolated</c-></a>] <c- b>Promise</c->&lt;<a class="n" data-link-type="idl-name" href="#dictdef-memorymeasurement"><c- n>MemoryMeasurement</c-></a>> <a class="idl-code" data-link-type="method" href="#dom-performance-measurememory"><c- g>measureMemory</c-></a>();
+  [<a class="idl-code" data-link-type="extended-attribute" href="https://github.com/heycam/webidl#pull/883"><c- g>CrossOriginIsolated</c-></a>] <c- b>Promise</c->&lt;<a class="n" data-link-type="idl-name" href="#dictdef-memorymeasurement"><c- n>MemoryMeasurement</c-></a>> <a class="idl-code" data-link-type="method" href="#dom-performance-measureuseragentspecificmemory"><c- g>measureUserAgentSpecificMemory</c-></a>();
 };
 
 </pre>
@@ -3255,11 +3259,11 @@ In both cases, cross-origin iframes do not get access to the API by default.</p>
     <li><a href="#ref-for-dom-memorybreakdownentry-attribution①">3.3. Converting an intermediate memory measurement to the result</a> <a href="#ref-for-dom-memorybreakdownentry-attribution②">(2)</a>
    </ul>
   </aside>
-  <aside class="dfn-panel" data-for="dom-memorybreakdownentry-useragentspecifictypes">
-   <b><a href="#dom-memorybreakdownentry-useragentspecifictypes">#dom-memorybreakdownentry-useragentspecifictypes</a></b><b>Referenced in:</b>
+  <aside class="dfn-panel" data-for="dom-memorybreakdownentry-types">
+   <b><a href="#dom-memorybreakdownentry-types">#dom-memorybreakdownentry-types</a></b><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-dom-memorybreakdownentry-useragentspecifictypes">2.1. Memory measurement result</a>
-    <li><a href="#ref-for-dom-memorybreakdownentry-useragentspecifictypes①">3.3. Converting an intermediate memory measurement to the result</a> <a href="#ref-for-dom-memorybreakdownentry-useragentspecifictypes②">(2)</a>
+    <li><a href="#ref-for-dom-memorybreakdownentry-types">2.1. Memory measurement result</a>
+    <li><a href="#ref-for-dom-memorybreakdownentry-types①">3.3. Converting an intermediate memory measurement to the result</a> <a href="#ref-for-dom-memorybreakdownentry-types②">(2)</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="dictdef-memoryattribution">
@@ -3339,10 +3343,10 @@ In both cases, cross-origin iframes do not get access to the API by default.</p>
     <li><a href="#ref-for-intermediate-memory-breakdown-entry-realms">3.3. Converting an intermediate memory measurement to the result</a>
    </ul>
   </aside>
-  <aside class="dfn-panel" data-for="intermediate-memory-breakdown-entry-user-agent-specific-types">
-   <b><a href="#intermediate-memory-breakdown-entry-user-agent-specific-types">#intermediate-memory-breakdown-entry-user-agent-specific-types</a></b><b>Referenced in:</b>
+  <aside class="dfn-panel" data-for="intermediate-memory-breakdown-entry-types">
+   <b><a href="#intermediate-memory-breakdown-entry-types">#intermediate-memory-breakdown-entry-types</a></b><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-intermediate-memory-breakdown-entry-user-agent-specific-types">3.3. Converting an intermediate memory measurement to the result</a>
+    <li><a href="#ref-for-intermediate-memory-breakdown-entry-types">3.3. Converting an intermediate memory measurement to the result</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="memory-attribution-token">
@@ -3367,13 +3371,13 @@ In both cases, cross-origin iframes do not get access to the API by default.</p>
     <li><a href="#ref-for-memory-attribution-token-cross-origin-aggregated-flag①">3.4. Creating or obtaining a memory attribution token</a> <a href="#ref-for-memory-attribution-token-cross-origin-aggregated-flag②">(2)</a> <a href="#ref-for-memory-attribution-token-cross-origin-aggregated-flag③">(3)</a> <a href="#ref-for-memory-attribution-token-cross-origin-aggregated-flag④">(4)</a>
    </ul>
   </aside>
-  <aside class="dfn-panel" data-for="dom-performance-measurememory">
-   <b><a href="#dom-performance-measurememory">#dom-performance-measurememory</a></b><b>Referenced in:</b>
+  <aside class="dfn-panel" data-for="dom-performance-measureuseragentspecificmemory">
+   <b><a href="#dom-performance-measureuseragentspecificmemory">#dom-performance-measureuseragentspecificmemory</a></b><b>Referenced in:</b>
    <ul>
-    <li><a href="#ref-for-dom-performance-measurememory">1. Introduction</a>
-    <li><a href="#ref-for-dom-performance-measurememory①">1.1. Examples</a> <a href="#ref-for-dom-performance-measurememory②">(2)</a>
-    <li><a href="#ref-for-dom-performance-measurememory③">2.1. Memory measurement result</a>
-    <li><a href="#ref-for-dom-performance-measurememory④">3.1. Extensions to the Performance interface</a> <a href="#ref-for-dom-performance-measurememory⑤">(2)</a>
+    <li><a href="#ref-for-dom-performance-measureuseragentspecificmemory">1. Introduction</a>
+    <li><a href="#ref-for-dom-performance-measureuseragentspecificmemory①">1.1. Examples</a> <a href="#ref-for-dom-performance-measureuseragentspecificmemory②">(2)</a>
+    <li><a href="#ref-for-dom-performance-measureuseragentspecificmemory③">2.1. Memory measurement result</a>
+    <li><a href="#ref-for-dom-performance-measureuseragentspecificmemory④">3.1. Extensions to the Performance interface</a> <a href="#ref-for-dom-performance-measureuseragentspecificmemory⑤">(2)</a>
    </ul>
   </aside>
   <aside class="dfn-panel" data-for="memory-measurement-allowed-predicate">
