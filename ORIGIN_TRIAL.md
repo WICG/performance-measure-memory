@@ -1,6 +1,6 @@
 # Origin Trial in Chrome
 
-The `performance.measureMemory()` API is available as [an origin trial](https://developers.chrome.com/origintrials/#/view_trial/1281274093986906113) in Chrome 82 to 87.
+The `performance.measureUserAgentSpecificMemory()` API is available as [an origin trial](https://developers.chrome.com/origintrials/#/view_trial/1281274093986906113) in Chrome 82 to 87.
 The origin trial ends on January 13, 2021.
 Follow [these instructions](https://web.dev/monitor-total-page-memory-usage/#enabling-support-during-the-origin-trial-phase) to register for the origin trial.
 

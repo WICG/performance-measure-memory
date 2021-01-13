@@ -1,16 +1,16 @@
-# performance.measureMemory API
+# performance.measureUserAgentSpecificMemory API
 
 [Draft specification](https://wicg.github.io/performance-measure-memory/)
 
 [Origin trial and how it differs from the specification](ORIGIN_TRIAL.md)
 
 ## tl;dr
-We propose a new `peformance.measureMemory` API that estimates memory usage of a web page including all its iframes and workers. The API is available only for [cross-origin isolated](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/crossOriginIsolated) web pages that opt in using [the COOP+COEP headers](https://docs.google.com/document/d/1zDlfvfTJ_9e8Jdc8ehuV4zMEu9ySMCiTGMS9y0GU92k/edit) preventing cross-origin information leaks.
+We propose a new `peformance.measureUserAgentSpecificMemory` API that estimates memory usage of a web page including all its iframes and workers. The API is available only for [cross-origin isolated](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/crossOriginIsolated) web pages that opt in using [the COOP+COEP headers](https://docs.google.com/document/d/1zDlfvfTJ_9e8Jdc8ehuV4zMEu9ySMCiTGMS9y0GU92k/edit) preventing cross-origin information leaks.
 
 Example:
 ```JavaScript
 async function run() {
-  const result = await performance.measureMemory();
+  const result = await performance.measureUserAgentSpecificMemory();
   console.log(result);
 }
 run();
@@ -26,7 +26,7 @@ run();
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      types: ["JS", "DOM"],
     },
     {
       bytes: 500000,
@@ -40,7 +40,7 @@ run();
           scope: "Window",
         }
       ],
-      userAgentSpecificTypes: ["DOM", "JS"],
+      types: ["DOM", "JS"],
     },
     {
       bytes: 800000,
@@ -50,12 +50,12 @@ run();
           scope: "DedicatedWorkerGlobalScope",
         },
       ],
-      userAgentSpecificTypes: ["JS"],
+      types: ["JS"],
     },
     {
       bytes: 0,
       attribution: [],
-      userAgentSpecificTypes: [],
+      types: [],
     },
   ],
 }
@@ -110,11 +110,11 @@ Our proposal has different [use cases](https://docs.google.com/document/d/1u21oa
 Thus the two proposals are orthogonal.
 
 ## API Proposal
-The API consists of a single asynchronous method `performance.measureMemory` that estimates memory usage of the web page and provides breakdown of the result by type and owner.
+The API consists of a single asynchronous method `performance.measureUserAgentSpecificMemory` that estimates memory usage of the web page and provides breakdown of the result by type and owner.
 
 ```JavaScript
 async function run() {
-  const result = await performance.measureMemory();
+  const result = await performance.measureUserAgentSpecificMemory();
   console.log(result);
 }
 run();
@@ -134,12 +134,12 @@ For a simple page without iframes and workers the result might look as follows:
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      types: ["JS", "DOM"],
     },
     {
       bytes: 0,
       attribution: [],
-      userAgentSpecificTypes: [],
+      types: [],
     },
   ],
 }
@@ -156,13 +156,13 @@ Providing only the total memory usage is also a valid implementation:
 }
 ```
 
-Similarly, the implementation might return empty `attribution: []` and/or empty `userAgentSpecificTypes: []`.
+Similarly, the implementation might return empty `attribution: []` and/or empty `types: []`.
 
 The top-level `bytes` field contains the total estimate of the web page's memory usage.
 Each entry of the `breakdown` array describes some portion of the memory and attributes it to a set of windows and workers.
 The entries are disjoint and their sizes sum up to the total `bytes`.
 
-The `userAgentSpecificTypes` field lists memory types associated with the memory portion.
+The `types` field lists memory types associated with the memory portion.
 As the name suggests each memory type is entirely implementation specific.
 In other words, memory types are not comparable across different browsers and may even change between different versions of the same browser.
 The order of memory types in the list is not significant and also depends on the implementation.
@@ -192,7 +192,7 @@ For a page that embeds a same-origin iframe the result might attribute some memo
     {
       bytes: 0,
       attribution: [],
-      userAgentSpecificTypes: [],
+      types: [],
     },
     {
       bytes: 1000000,
@@ -202,7 +202,7 @@ For a page that embeds a same-origin iframe the result might attribute some memo
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      types: ["JS", "DOM"],
     },
     {
       bytes: 500000,
@@ -216,7 +216,7 @@ For a page that embeds a same-origin iframe the result might attribute some memo
           scope: "Window",
         }
       ],
-      userAgentSpecificTypes: ["DOM", "JS"],
+      types: ["DOM", "JS"],
     },
   ],
 }
@@ -233,7 +233,7 @@ It is not always possible to separate iframe memory from page memory in a meanin
     {
       bytes: 0,
       attribution: [],
-      userAgentSpecificTypes: [],
+      types: [],
     },
     {
       bytes: 1500000,
@@ -251,7 +251,7 @@ It is not always possible to separate iframe memory from page memory in a meanin
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      types: ["JS", "DOM"],
     },
   ],
 };
@@ -271,12 +271,12 @@ For a page that spawns a web worker the result includes the URL of the worker.
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["DOM", "JS"],
+      types: ["DOM", "JS"],
     },
     {
       bytes: 0,
       attribution: [],
-      userAgentSpecificTypes: [],
+      types: [],
     },
     {
       bytes: 800000,
@@ -286,7 +286,7 @@ For a page that spawns a web worker the result includes the URL of the worker.
           scope: "DedicatedWorkerGlobalScope",
         },
       ],
-      userAgentSpecificTypes: ["JS"],
+      types: ["JS"],
     },
   ],
 };
@@ -296,7 +296,7 @@ An implementation might lump together worker and page memory. If a worker is spa
 Memory of shared and service workers is not included in the result.
 
 ### Example 4
-To get the memory usage of a shared/service worker, the performance.measureMemory() function needs to be invoked in the context of that worker. The result could be something like:
+To get the memory usage of a shared/service worker, the performance.measureUserAgentSpecificMemory() function needs to be invoked in the context of that worker. The result could be something like:
 ```JavaScript
 {
   bytes: 1000000,
@@ -309,12 +309,12 @@ To get the memory usage of a shared/service worker, the performance.measureMemor
           scope: "ServiceWorkerGlobalScope",
         },
       ],
-      userAgentSpecificTypes: ["JS"],
+      types: ["JS"],
     },
     {
       bytes: 0,
       attribution: [],
-      userAgentSpecificTypes: [],
+      types: [],
     },
   ],
 }
@@ -354,7 +354,7 @@ A cross-origin iframe embeds to other iframes and spawns a worker. All memory of
     {
       bytes: 0,
       attribution: [],
-      userAgentSpecificTypes: [],
+      types: [],
     },
     {
       bytes: 1000000,
@@ -364,7 +364,7 @@ A cross-origin iframe embeds to other iframes and spawns a worker. All memory of
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["DOM", "JS"],
+      types: ["DOM", "JS"],
     },
     {
       bytes: 1400000,
@@ -378,7 +378,7 @@ A cross-origin iframe embeds to other iframes and spawns a worker. All memory of
           scope: "cross-origin-aggregated",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      types: ["JS", "DOM"],
     },
   ],
 }
@@ -419,12 +419,12 @@ example.com (1000000 bytes)
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      types: ["JS", "DOM"],
     },
     {
       bytes: 0,
       attribution: [],
-      userAgentSpecificTypes: [],
+      types: [],
     },
     {
       bytes: 500000,
@@ -438,7 +438,7 @@ example.com (1000000 bytes)
           scope: "cross-origin-aggregated",
         },
       ],
-      userAgentSpecificTypes: ["DOM", "JS"],
+      types: ["DOM", "JS"],
     },
     {
       bytes: 200000,
@@ -452,7 +452,7 @@ example.com (1000000 bytes)
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      types: ["JS", "DOM"],
     },
   ],
 }
@@ -516,8 +516,8 @@ Even better would be to use statistical sampling such as Poisson sampling to avo
 ```JavaScript
 // Starts statistical sampling of the memory usage.
 function scheduleMeasurement() {
-  if (!performance.measureMemory) {
-    console.log('performance.measureMemory is not available.');
+  if (!performance.measureUserAgentSpecificMemory) {
+    console.log('performance.measureUserAgentSpecificMemory is not available.');
     return;
   }
   let interval = measurementInterval();
@@ -527,10 +527,10 @@ function scheduleMeasurement() {
 }
 
 async function performMeasurement() {
-  // 1. Invoke performance.measureMemory().
+  // 1. Invoke performance.measureUserAgentSpecificMemory().
   let result;
   try {
-    result = await performance.measureMemory();
+    result = await performance.measureUserAgentSpecificMemory();
   } catch (error) {
     if (error instanceof DOMException &&
         error.name === 'SecurityError') {

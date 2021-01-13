@@ -99,7 +99,7 @@ Introduction {#intro}
 <div nonnormative>
 The tradeoff between memory and performance is inherent in many algorithms and data-structures.
 Web developers today have multiple ways to measure the timing information and no standard way to measure the memory usage.
-This specification defines a {{Performance/measureMemory()|performance.measureMemory()}} API that estimates the memory usage of the web application including all its iframes and workers.
+This specification defines a {{Performance/measureUserAgentSpecificMemory()|performance.measureUserAgentSpecificMemory()}} API that estimates the memory usage of the web application including all its iframes and workers.
 The new API is intended for aggregating memory usage data from production. The main use cases are:
 - Regression detection during rollout of a new version of the web application to catch new memory leaks.
 - A/B testing a new feature to evaluate its memory impact.
@@ -110,12 +110,12 @@ Examples {#examples}
 
 <div class="example" id="example-simple-page">
 
-A {{Performance/measureMemory()|performance.measureMemory()}} call returns a {{Promise}} and starts
+A {{Performance/measureUserAgentSpecificMemory()|performance.measureUserAgentSpecificMemory()}} call returns a {{Promise}} and starts
 an asynchronous measurement of the memory allocated by the page.
 
 ```javascript
 async function run() {
-  const result = await performance.measureMemory();
+  const result = await performance.measureUserAgentSpecificMemory();
   console.log(result);
 }
 run();
@@ -134,12 +134,12 @@ For a simple page without iframes and workers the result might look as follows:
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      types: ["JS", "DOM"],
     },
     {
       bytes: 0,
       attribution: [],
-      userAgentSpecificTypes: [],
+      types: [],
     },
   ],
 }
@@ -164,7 +164,7 @@ Here the implementation provides only the total memory usage.
     {
       bytes: 0,
       attribution: [],
-      userAgentSpecificTypes: [],
+      types: [],
     },
     {
       bytes: 1000000,
@@ -174,7 +174,7 @@ Here the implementation provides only the total memory usage.
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: [],
+      types: [],
     },
   ],
 }
@@ -208,12 +208,12 @@ to that iframe and provide diagnostic information for identifying the iframe:
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["DOM", "JS"],
+      types: ["DOM", "JS"],
     },
     {
       bytes: 0,
       attribution: [],
-      userAgentSpecificTypes: [],
+      types: [],
     },
     {
       bytes: 500000,
@@ -227,7 +227,7 @@ to that iframe and provide diagnostic information for identifying the iframe:
           scope: "Window",
         }
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      types: ["JS", "DOM"],
     },
   ],
 }
@@ -259,12 +259,12 @@ An implementation is allowed to lump together some or all of iframe and page mem
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      types: ["JS", "DOM"],
     },
     {
       bytes: 0,
       attribution: [],
-      userAgentSpecificTypes: [],
+      types: [],
     },
   ],
 };
@@ -280,7 +280,7 @@ For a page that spawns a web worker the result includes the URL of the worker.
     {
       bytes: 0,
       attribution: [],
-      userAgentSpecificTypes: [],
+      types: [],
     },
     {
       bytes: 1000000,
@@ -290,7 +290,7 @@ For a page that spawns a web worker the result includes the URL of the worker.
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      types: ["JS", "DOM"],
     },
     {
       bytes: 800000,
@@ -300,7 +300,7 @@ For a page that spawns a web worker the result includes the URL of the worker.
           scope: "DedicatedWorkerGlobalScope",
         },
       ],
-      userAgentSpecificTypes: ["JS"],
+      types: ["JS"],
     },
   ],
 };
@@ -315,8 +315,7 @@ Memory of shared and service workers is not included in the result.
 
 
 <div class="example" id="example-shared-worker">
-To get the memory usage of a shared/service worker, the {{Performance/measureMemory()|performance.measureMemory()}} 
-function needs to be invoked in the context of that worker.
+To get the memory usage of a shared/service worker, the {{Performance/measureUserAgentSpecificMemory()|performance.measureUserAgentSpecificMemory()}} function needs to be invoked in the context of that worker.
 The result could be something like:
 ```javascript
 {
@@ -330,12 +329,12 @@ The result could be something like:
           scope: "ServiceWorkerGlobalScope",
         },
       ],
-      userAgentSpecificTypes: ["JS"],
+      types: ["JS"],
     },
     {
       bytes: 0,
       attribution: [],
-      userAgentSpecificTypes: [],
+      types: [],
     },
   ],
 }
@@ -386,12 +385,12 @@ All memory of these resources is attributed to the first iframe.
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      types: ["JS", "DOM"],
     },
     {
       bytes: 0,
       attribution: [],
-      userAgentSpecificTypes: [],
+      types: [],
     },
     {
       bytes: 1400000,
@@ -405,7 +404,7 @@ All memory of these resources is attributed to the first iframe.
           scope: "cross-origin-aggregated",
         },
       ],
-      userAgentSpecificTypes: ["DOM", "JS"],
+      types: ["DOM", "JS"],
     },
   ],
 }
@@ -430,7 +429,7 @@ iframes are not accounted for:
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      types: ["JS", "DOM"],
     },
     {
       bytes: 0,
@@ -444,12 +443,12 @@ iframes are not accounted for:
           scope: "cross-origin-aggregated",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      types: ["JS", "DOM"],
     },
     {
       bytes: 0,
       attribution: [],
-      userAgentSpecificTypes: [],
+      types: [],
     },
   ],
 }
@@ -490,12 +489,12 @@ example.com (1000000 bytes)
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["DOM", "JS"],
+      types: ["DOM", "JS"],
     },
     {
       bytes: 0,
       attribution: [],
-      userAgentSpecificTypes: [],
+      types: [],
     },
     {
       bytes: 500000,
@@ -509,7 +508,7 @@ example.com (1000000 bytes)
           scope: "cross-origin-aggregated",
         },
       ],
-      userAgentSpecificTypes: ["DOM", "JS"],
+      types: ["DOM", "JS"],
     },
     {
       bytes: 200000,
@@ -523,7 +522,7 @@ example.com (1000000 bytes)
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      types: ["JS", "DOM"],
     },
   ],
 }
@@ -543,7 +542,7 @@ then the result could look like:
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      types: ["JS", "DOM"],
     },
     {
       bytes: 0,
@@ -557,7 +556,7 @@ then the result could look like:
           scope: "cross-origin-aggregated",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      types: ["JS", "DOM"],
     },
     {
       bytes: 200000,
@@ -571,12 +570,12 @@ then the result could look like:
           scope: "Window",
         },
       ],
-      userAgentSpecificTypes: ["JS", "DOM"],
+      types: ["JS", "DOM"],
     },
     {
       bytes: 0,
       attribution: [],
-      userAgentSpecificTypes: [],
+      types: [],
     },
   ],
 }
@@ -589,7 +588,7 @@ Data model {#data-model}
 Memory measurement result {#memory-measurement-result}
 ------------------------------------------------------
 
-The {{Performance/measureMemory()|performance.measureMemory()}} function returns a {{Promise}} that resolves to an instance of {{MemoryMeasurement}} dictionary:
+The {{Performance/measureUserAgentSpecificMemory()|performance.measureUserAgentSpecificMemory()}} function returns a {{Promise}} that resolves to an instance of {{MemoryMeasurement}} dictionary:
 
 <pre class="idl">
 dictionary MemoryMeasurement {
@@ -608,7 +607,7 @@ dictionary MemoryMeasurement {
 dictionary MemoryBreakdownEntry {
   unsigned long long bytes;
   sequence&lt;MemoryAttribution&gt; attribution;
-  sequence&lt;DOMString&gt; userAgentSpecificTypes;
+  sequence&lt;DOMString&gt; types;
 };
 </pre>
 <dl class="domintro">
@@ -618,7 +617,7 @@ dictionary MemoryBreakdownEntry {
 :  <code>breakdown . {{MemoryBreakdownEntry/attribution}}</code>
 :: An array of URLs and/or container elements of the [=JavaScript realms=] that use the memory.
 
-:  <code>breakdown . {{MemoryBreakdownEntry/userAgentSpecificTypes}}</code>
+:  <code>breakdown . {{MemoryBreakdownEntry/types}}</code>
 :: An array of [=implementation-defined=] memory types associated with the memory. </dl>
 
 <pre class="idl">
@@ -711,18 +710,18 @@ Extensions to the {{Performance}} interface {#extensions-to-performance}
 
 <pre class="idl">
 partial interface Performance {
-  [CrossOriginIsolated] Promise&lt;MemoryMeasurement&gt; measureMemory();
+  [CrossOriginIsolated] Promise&lt;MemoryMeasurement&gt; measureUserAgentSpecificMemory();
 };
 </pre>
 <dl class="domintro">
-:  <code>performance . {{Performance/measureMemory()}}</code>
+:  <code>performance . {{Performance/measureUserAgentSpecificMemory()}}</code>
 :: A method that performs an asynchronous memory measurement. Details about the result of the method are in [[#memory-measurement-result]]. </dl>
 
 
 Top-level algorithms {#top-level-algorithms}
 --------------------------------------------
 <div algorithm>
-  The <dfn method for="Performance">measureMemory()</dfn> method steps are:
+  The <dfn method for="Performance">measureUserAgentSpecificMemory()</dfn> method steps are:
   1. [=Assert=]: [=the current Realm=]'s [=Realm/settings objects=]'s [=environment settings object/cross-origin isolated capability=] is true.
   1. If [=memory measurement allowed predicate=] given [=the current Realm=] is false, then:
       1. Return [=a promise rejected with=] a "{{SecurityError}}" {{DOMException}}.
@@ -774,7 +773,7 @@ Converting an intermediate memory measurement to the result {#converting-an-inte
   1. [=list/Append=] to |breakdown| a new {{MemoryBreakdownEntry}} whose:
       - {{MemoryBreakdownEntry/bytes}} is 0,
       - {{MemoryBreakdownEntry/attribution}} is « »,
-      - {{MemoryBreakdownEntry/userAgentSpecificTypes}} is « ».
+      - {{MemoryBreakdownEntry/types}} is « ».
   1. [=set/For each=] [=intermediate memory breakdown entry=] |intermediate entry| in |intermediate measurement|:
       1. Let |breakdown entry| be the result of [=creating a new memory breakdown entry=] given |intermediate entry|.
       1. [=list/Append=] |breakdown entry| to |breakdown|.
@@ -796,7 +795,7 @@ Converting an intermediate memory measurement to the result {#converting-an-inte
   1. Return a new {{MemoryBreakdownEntry}} whose:
       - {{MemoryBreakdownEntry/bytes}} is |intermediate entry|'s [=intermediate memory breakdown entry/bytes=],
       - {{MemoryBreakdownEntry/attribution}} is |attribution|,
-      - {{MemoryBreakdownEntry/userAgentSpecificTypes}} is |types|.
+      - {{MemoryBreakdownEntry/types}} is |types|.
 </div>
 
 <div algorithm>
