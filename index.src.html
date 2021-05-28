@@ -710,7 +710,7 @@ Extensions to the {{Performance}} interface {#extensions-to-performance}
 
 <pre class="idl">
 partial interface Performance {
-  [Exposed=(Window,ServiceWorker,SharedWorker) CrossOriginIsolated] Promise&lt;MemoryMeasurement&gt; measureUserAgentSpecificMemory();
+  [Exposed=(Window,ServiceWorker,SharedWorker), CrossOriginIsolated] Promise&lt;MemoryMeasurement&gt; measureUserAgentSpecificMemory();
 };
 </pre>
 <dl class="domintro">
